@@ -38,16 +38,22 @@ class map:
                                     self.Nodes.append(Node)
     def get_connections(self):
         raise NotImplementedError("To be implimented")
+        for EachNode in self.graph.keys():
+            for EachLine in self.Lines:
+                for v1 in range(0,EachLine):
+                    if EachNode == EachLine[v1]: 
+                        d = 0
+
+
+
 
     def Make_graph(self):
         self.graph = {EachNode:[] for EachNode in self.Nodes}
-
+        self.get_connections()
 
             
 
 
     
-
-
 
 
