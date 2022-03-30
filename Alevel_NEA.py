@@ -324,4 +324,4 @@ print(get_nodes(Lines))
 
 colour = (192,192,192)
 
-#display_mapping_editor(colour)
+display_mapping_editor(colour)
