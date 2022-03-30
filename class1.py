@@ -25,8 +25,8 @@ class map:
                                 pass
                             
                             else:
-                                for eachvertex in self.Nodes:
-                                    if Node == eachvertex:
+                                for EachVertex in self.Nodes:
+                                    if Node == EachVertex:
                                         Node = False
 
                                 """used for testing
@@ -36,6 +36,13 @@ class map:
                                     pass
                                 else:
                                     self.Nodes.append(Node)
+    def get_connections(self):
+        raise NotImplementedError("To be implimented")
+
+    def Make_graph(self):
+        self.graph = {EachNode:[] for EachNode in self.Nodes}
+
+
             
 
 
