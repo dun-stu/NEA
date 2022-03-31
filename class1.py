@@ -44,7 +44,7 @@ class map:
                     if EachNode == EachLine[v1]: 
                         d = 0
 
-#comment
+#comment what
 
 
     def Make_graph(self):
