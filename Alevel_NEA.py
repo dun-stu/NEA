@@ -71,8 +71,8 @@ def get_nodes(Lines):
                                 pass
                             
                             else:
-                                for eachvertex in Nodes:
-                                    if Node == eachvertex:
+                                for EachVertex in Nodes:
+                                    if Node == EachVertex:
                                         Node = False
 
                                 """used for testing
