@@ -85,12 +85,39 @@ class map:
                                     #test implimentation
                                     Node = (Node[0],Node[1])
                                     self.Nodes.append(Node)
+
     def get_connections(self):
+
         for EachNode in self.graph.keys():
             for EachLine in self.Lines:
                 for v1 in range(0,len(EachLine)):
                     if EachNode == EachLine[v1]: 
                         d = 0
+                        nc = False
+                        for v2 in range((v1-1), -1,-1):
+                            
+                            if nc == True:
+                                continue
+
+                            d += math.sqrt(((EachLine[v2][0] - EachLine[v2+1][0])**2) + ((EachLine[v2][1] - EachLine[v2+1][1])**2))
+                            for EachVertex in self.Nodes:
+                                if EachLine[v2] == EachVertex:
+                                    self.graph[EachNode].append([EachLine[v2],d])
+                                    nc = True
+                                    continue
+                        d = 0
+                        nc = False
+                        for v2 in range((v1+1), len(EachLine)):
+                            
+                            if nc == True:
+                                continue
+
+                            d += math.sqrt(((EachLine[v2][0] - EachLine[v2-1][0])**2) + ((EachLine[v2][1] - EachLine[v2-1][1])**2))
+                            for EachVertex in self.Nodes:
+                                if EachLine[v2] == EachVertex:
+                                    self.graph[EachNode].append([Eachline[v2],d])
+                                    nc = True
+                                    continue
 
 #comment what
 
