@@ -38,7 +38,7 @@ def check_vertex(CoordinateSet1, CoordinateSet2): #trace table needed, appears n
         y = (m1*(x - x1_1)) + y1_1
 
     if  (min(x1_1,x1_2) <= x <= max(x1_1,x1_2)) and (min(x2_1,x2_2) <= x <= max(x2_1,x2_2)) and (min(y1_1,y1_2) <= y <= max(y1_1,y1_2)) and (min(y2_1,y2_2) <= y <= max(y2_1,y2_2)):
-        return [round(x, 2),round(y, 2)]
+        return (round(x, 2),round(y, 2))
     else:
         """used for testing
         print('intersections outside coordinate ranges')
@@ -82,8 +82,7 @@ class map:
                                 if Node == False:
                                     pass
                                 else:
-                                    #test implimentation
-                                    Node = (Node[0],Node[1])
+                                    Node = tuple(Node)
                                     self.Nodes.append(Node)
 
     def get_connections(self):
@@ -91,7 +90,14 @@ class map:
         for EachNode in self.graph.keys():
             for EachLine in self.Lines:
                 for v1 in range(0,len(EachLine)):
-                    if EachNode == EachLine[v1]: 
+                    """used for testing
+                    print('EachNode = ', end = "")
+                    print(EachNode)
+                    print('tuple(EachLine[v1]) = ', end = "")
+                    print(tuple(EachLine[v1]))
+
+                    """
+                    if EachNode == check_vertex(): #tbc 
                         d = 0
                         nc = False
                         for v2 in range((v1-1), -1,-1):
@@ -131,6 +137,7 @@ class map:
 Map_Instance = map([[[20,30],[50,30],[130,50],[110,70],[80,80],[70,70],[80,40],[100,20],[120,10]],[[30,50],[20,30],[40,10],[50,50],[20,30],[10,10]]])
 Map_Instance.make_graph()
 print(Map_Instance.graph)
+print(Map_Instance.Nodes)
 """"""           
 
 
