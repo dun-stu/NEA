@@ -59,16 +59,18 @@ def check_vertex(CoordinateSet1, CoordinateSet2): #to check if the lines between
             if (m1 == m2) or (CoordinateSet2 == tuple(CoordinateSet1[0])) or (CoordinateSet2 == tuple(CoordinateSet1[1])):
                 return True
 
-                """used for testing"""
+                """used for testing
             elif (m1 != m2):
                 print('gradients not the same')
-            
-            """used for testing"""
+                """
+            """used for testing
         else:
             print('(third) coordinate outside coordinate ranges')
-            """"""
+            """
         return False
 
+def distance_between(Point1, Point2):
+    return math.sqrt(((Point1[0] - Point2[0])**2) + ((Point1[1] - Point2[1])**2))
 
 class map:
     
@@ -110,63 +112,123 @@ class map:
                                     Node = tuple(Node)
                                     self.Nodes.append(Node)
 
-    def get_connections(self):
+    def get_connections(self): #to be fixed
 
-        for EachNode in self.graph.keys():
-            for EachLine in self.Lines:
-                for v1 in range(0,len(EachLine)):
+        for EachNode in self.graph.keys(): # the connections for each node is gotten
+            """used for testing
+            print('EachNode = ', end = "")
+            print(EachNode)
+            """
+            for EachLine in self.Lines: #the node may be in, and have multiple connections in whichever lines it is in
+                for v1 in range(0,(len(EachLine) - 1)):
                     """used for testing
-                    print('EachNode = ', end = "")
-                    print(EachNode)
+                    #print('EachNode = ', end = "")
+                    #print(EachNode)
                     print('tuple(EachLine[v1]) = ', end = "")
                     print(tuple(EachLine[v1]))
 
                     """
-                    if EachNode == check_vertex(): #tbc 
-                        d = 0
+                    if check_vertex((EachLine[v1],EachLine[v1 + 1]),EachNode): #v1 + 1 index is why v1 is in range len(Eachline) but -1
+                        """used for testing
+                        print(EachNode, end = "")
+                        print(" found")
+                        print('tuple(EachLine[v1]) = ', end = "")
+                        print(tuple(EachLine[v1]))
+                        print('tuple(EachLine[v1 + 1]) = ', end = "")
+                        print(tuple(EachLine[v1 + 1]))
+                        """
                         nc = False
-                        for v2 in range((v1-1), -1,-1):
-                            
-                            if nc == True:
-                                continue
-
-                            d += math.sqrt(((EachLine[v2][0] - EachLine[v2+1][0])**2) + ((EachLine[v2][1] - EachLine[v2+1][1])**2))
-                            for EachVertex in self.Nodes:
-                                if EachLine[v2] == EachVertex:
-                                    self.graph[EachNode].append([EachLine[v2],d])
+                        
+                       # """
+                        for EachVertex in self.Nodes:
+                            if check_vertex((EachLine[v1],EachNode), EachVertex):
+                                d = distance_between(EachVertex, EachNode)
+                                if d != 0:   
                                     nc = True
-                                    continue
-                        d = 0
+                                    self.graph[EachNode].append([EachVertex, round(d,2)])
+
+                        #"""
+                        d = distance_between(EachLine[v1], EachNode)
+                        
+                        for v2 in range((v1), 0,-1): #checks for connections chronologically prior in the list
+                            
+                            if nc == True: break #if connection prior found
+
+                            for EachVertex in self.Nodes:
+                                if check_vertex((EachLine[v2],EachLine[v2 - 1]),EachVertex):
+                                    d += distance_between(EachLine[v2],EachVertex)
+                                    if d != 0: #if the 
+                                        self.graph[EachNode].append([EachVertex,round(d,2)])
+                                        nc = True
+                                        break  
+
+                            else: d += distance_between(EachLine[v2],EachLine[v2 - 1])
+                       
+                        
                         nc = False
-                        for v2 in range((v1+1), len(EachLine)):
-                            
-                            if nc == True:
-                                continue
-
-                            d += math.sqrt(((EachLine[v2][0] - EachLine[v2-1][0])**2) + ((EachLine[v2][1] - EachLine[v2-1][1])**2))
-                            for EachVertex in self.Nodes:
-                                if EachLine[v2] == EachVertex:
-                                    self.graph[EachNode].append([Eachline[v2],d])
+                       # """
+                        for EachVertex in self.Nodes:
+                            if check_vertex((EachLine[v1 + 1],EachNode), EachVertex):
+                                d = distance_between(EachVertex, EachNode)
+                                if d != 0:
                                     nc = True
-                                    continue
+                                    self.graph[EachNode].append([EachVertex, round(d,2)])
+                        #"""
+                        d = distance_between(EachLine[v1+1], EachNode)
+                        for v2 in range((v1+1), (len(EachLine)-1)):
+                            if nc == True: break
 
+                            for EachVertex in self.Nodes:
+                                if check_vertex((EachLine[v2],EachLine[v2 + 1]),EachVertex):
+                                    """used for testing
+                                    print('tuple(EachLine[v2]) = ', end = "")
+                                    print(tuple(EachLine[v2]))
+                                    print('tuple(EachLine[v2 + 1]) = ', end = "")
+                                    print(tuple(EachLine[v2 + 1]))
+                                    print('EachVertex = ' ,end = "")
+                                    print(EachVertex)
+                                    """
+                                    d += distance_between(EachLine[v2],EachVertex)
+                                    if d != 0:
+                                        self.graph[EachNode].append([EachVertex,round(d,2)])
+                                        nc = True
+                                        break
+
+                            else: 
+                                d += distance_between(EachLine[v2],EachLine[v2 + 1])
+                                """used for testing
+                                print(d)
+                                """
+
+                        """used for testing
+                    else: breakpoint()
+                    """
 #comment what
 
 
     def make_graph(self):
         self.get_nodes()
         self.graph = {EachNode:[] for EachNode in self.Nodes}
-      #  self.get_connections()
+        self.get_connections()
+
+        for each in self.graph.keys():  #remove duplicates
+            temp = []
+
+            for i in self.graph[each]:
+                if i not in temp:
+                    temp.append(i)
+
+            self.graph[each] = temp
 
       
-print(check_vertex(((8,6),(12,14)),(12,14)))
+#print(check_vertex(((5,14),(15,3)),(15,3)))
 
-"""used for testing
+"""used for testing"""
 Map_Instance = map([[[20,30],[50,30],[130,50],[110,70],[80,80],[70,70],[80,40],[100,20],[120,10]],[[30,50],[20,30],[40,10],[50,50],[20,30],[10,10]]])
 Map_Instance.make_graph()
 print(Map_Instance.graph)
-print(Map_Instance.Nodes)
-"""           
+#print(Map_Instance.Nodes)
+""""""           
 
 
     
