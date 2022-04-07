@@ -84,19 +84,29 @@ def get_nodes(Lines):
                                     Nodes.append(Node)
             return Nodes
                                     
-    
+def pressing(buttonposition, button, mouseposition):
+   if (buttonposition[0]) < mouseposition[0] < (buttonposition[0] + (button.get_rect()).width) and (buttonposition[1]) < mouseposition[1] < (buttonposition[1] + (button.get_rect()).height): return True
+   else: return False   
 
 def display_mapping_editor(colour): # to be changed to Map.colour when OOP is implimented + more parameters(like map, user)
 
   #  colour = Map.colour #to be implimented
     screen     = pygame.display.set_mode((1536,800))
-
+    OffButtonTextColour = (54, 50, 50)
+    OffButtonColour = (227, 220, 220)
+    OnButtonTextColour = (0, 0, 0)
+    OnButtonColour = (255, 255, 255)
     optionsbar = pygame.Surface((1536,100))
     optionsbar.fill(colour)
+    optionstext = (pygame.font.SysFont('arial', 52)).render('OPTIONS', True, (0,0,0))
     MapSize = (1536, 700)
     map = pygame.Surface(MapSize)
     map.fill((255,255,255))          # map only colour option is white, as this is clearest to draw on
     mapbox = pygame.transform.scale(map, [192, 88])
+    GraphButtonTextColour = OffButtonTextColour
+    GraphButtonColour = OffButtonColour
+    graphbutton = (pygame.font.SysFont('arial', 32)).render('Make Graph', True, GraphButtonTextColour, GraphButtonColour)
+
     """used for testing
     x = 500
     y = 0
@@ -117,6 +127,7 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
     zooming    = False
     drawing    = False
     zoom       = 1
+    linesexist = False
     """used for testing
     P = ['x value not relevant', 0] #test for panning
     K = [0,0] #test for panning 
@@ -148,23 +159,40 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
         map = pygame.Surface(MapSize)
         map.fill((255,255,255)) 
         try:     #try except used, in case there is no lines yet
+            linesexist = False
             for EachLine in Lines:
+                linesexist = True #if there is a line in Lines
                 pygame.draw.lines(map, colour, False ,EachLine, width = 5)
-
-            pygame.draw.lines(map, colour, False ,NewLine, width = 5) #if the NewLine hasn't been made yet, then this can't be run 
+            
+            
+            if len(NewLine) > 1: #a single coordinate is not valid as a line
+                pygame.draw.lines(map, colour, False ,NewLine, width = 5) #if the NewLine hasn't been made yet, then this can't be run 
+                linesexist = True #if there is a newline
 
         except:
             pass
+        
+        if linesexist:
+            GraphButtonTextColour =  OnButtonTextColour
+            GraphButtonColour =  OnButtonColour
+        else:
+            GraphButtonTextColour =  OffButtonTextColour #if there are no lines, a graph can't be made
+            GraphButtonColour =  OffButtonColour
 
 
+
+        
         #code in progress
         map = pygame.transform.scale(map, [round(MapSize[0] * zoom), round(MapSize[1] * zoom)])
+        graphbutton = (pygame.font.SysFont('arial', 32)).render('Make Graph', True, GraphButtonTextColour, GraphButtonColour)
 
         screen.blit(map, MapToScreenOffset) # the map surface is blit to the screen, with offsets to account for panning, zooming and the Options bar
         screen.blit(optionsbar, (0,0))
         mapbox = pygame.transform.scale(map, [192, 88])
+        screen.blit(optionstext, (20,20))
         pygame.draw.rect(mapbox, (0,0,100), pygame.Rect(-(MapToScreenOffset[0])/(8*zoom), -(MapToScreenOffset[1] - 100)/(8*zoom), 192/zoom, 88/zoom ), 2)
         screen.blit(mapbox, (1100,6)) 
+        screen.blit(graphbutton , (550,10))
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -194,10 +222,17 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
                     InitialOffset        = [MapToScreenOffset[0], MapToScreenOffset[1]]
 
                 if event.button == 1: #the left click
-                    drawing     = True
-                    Point = [round((pygame.mouse.get_pos()[0] - MapToScreenOffset[0])/zoom), round((pygame.mouse.get_pos()[1] - MapToScreenOffset[1])/zoom)]
-                    #this Point is based on the map surface of default size
-                    NewLine = [[Point[0] , Point[1]]]
+                    if pressing((550,10), graphbutton, pygame.mouse.get_pos()) and (GraphButtonColour ==  OnButtonColour):
+                        #mapobject = make_graph(Lines)
+                        """used for testing"""
+                        print("make_graph()")
+                        """"""
+                        pass
+                    else:
+                        drawing     = True
+                        Point = [round((pygame.mouse.get_pos()[0] - MapToScreenOffset[0])/zoom), round((pygame.mouse.get_pos()[1] - MapToScreenOffset[1])/zoom)]
+                        #this Point is based on the map surface of default size
+                        NewLine = [[Point[0] , Point[1]]]
 
                 if event.button == 4 and zoom < 3: #zoom in
                     zoom += 0.25
@@ -250,11 +285,16 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
                     zooming = False
 
                 if event.button == 1: #the left click  
-                    drawing     = False
-                    Lines.append(NewLine)
-                    """used for testing
-                    print(Lines)
-                    """
+                    if drawing == True:
+                        drawing     = False
+                        """used for testing"""
+                        print(Newline)
+                        """"""
+                        if len(NewLine) > 1: #a single coordinate is not valid as a line
+                            Lines.append(NewLine)
+                        """used for testing
+                        print(Lines)
+                        """
                     
 
         if panning:
@@ -312,16 +352,16 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
                     
             
             
-a = check_vertex([[80,40],[100,20]],[[50,30],[130,50]])
-print(a)
+#a = check_vertex([[80,40],[100,20]],[[50,30],[130,50]])
+#print(a)
 
-"""used for testing"""
+"""used for testing
 Lines = [[[20,30],[50,30],[130,50],[110,70],[80,80],[70,70],[80,40],[100,20],[120,10]],[[30,50],[20,30],[40,10],[50,50],[20,30],[10,10]]]
 print(get_nodes(Lines))
-""""""
+"""
 
 
 
 colour = (192,192,192)
 
-#display_mapping_editor(colour)
+display_mapping_editor(colour)
