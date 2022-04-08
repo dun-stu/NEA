@@ -203,13 +203,6 @@ class map:
                         """used for testing
                     else: breakpoint()
                     """
-#comment what
-
-
-    def make_graph(self):
-        self.get_nodes()
-        self.graph = {EachNode:[] for EachNode in self.Nodes}
-        self.get_connections()
 
         for each in self.graph.keys():  #remove duplicates
             temp = []
@@ -219,6 +212,15 @@ class map:
                     temp.append(i)
 
             self.graph[each] = temp
+
+#comment what
+
+
+    def make_graph(self):
+        self.get_nodes()
+        self.graph = {EachNode:[] for EachNode in self.Nodes}
+        self.get_connections()
+
 
       
 #print(check_vertex(((5,14),(15,3)),(15,3)))

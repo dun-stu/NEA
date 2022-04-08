@@ -91,22 +91,44 @@ def pressing(buttonposition, button, mouseposition):
 def display_mapping_editor(colour): # to be changed to Map.colour when OOP is implimented + more parameters(like map, user)
 
   #  colour = Map.colour #to be implimented
-    screen     = pygame.display.set_mode((1536,800))
+    screen  = pygame.display.set_mode((1536,800))
     OffButtonTextColour = (54, 50, 50)
-    OffButtonColour = (227, 220, 220)
-    OnButtonTextColour = (0, 0, 0)
-    OnButtonColour = (255, 255, 255)
-    optionsbar = pygame.Surface((1536,100))
+    OffButtonColour     = (227, 220, 220)
+    OnButtonTextColour  = (0, 0, 0)
+    OnButtonColour      = (255, 255, 255)
+    optionsbar  = pygame.Surface((1536,100))
     optionsbar.fill(colour)
     optionstext = (pygame.font.SysFont('arial', 52)).render('OPTIONS', True, (0,0,0))
     MapSize = (1536, 700)
-    map = pygame.Surface(MapSize)
+    map     = pygame.Surface(MapSize)
     map.fill((255,255,255))          # map only colour option is white, as this is clearest to draw on
-    mapbox = pygame.transform.scale(map, [192, 88])
+    mapbox  = pygame.transform.scale(map, [192, 88])
+    MapBoxPosition        = (1100,6)
     GraphButtonTextColour = OffButtonTextColour
-    GraphButtonColour = OffButtonColour
-    graphbutton = (pygame.font.SysFont('arial', 32)).render('Make Graph', True, GraphButtonTextColour, GraphButtonColour)
+    GraphButtonColour     = OffButtonColour
+    GraphButtonPosition   = (550,10)
+    UndoButtonTextColour  = OffButtonTextColour
+    UndoButtonColour      = OffButtonColour
+    UndoButtonPosition    = (1390,10)
+    RedoButtonTextColour  = OffButtonTextColour
+    RedoButtonColour      = OffButtonColour
+    RedoButtonPosition    = (1460,10)
+    #zoomtext    = (pygame.font.SysFont('arial', 13)).render('      Zoom        ', True, (0,0,0)) 
 
+    #ZoomTextPosition = (1390,40)
+    #Zoom%Position    = (1450,60)
+     
+    #ZoomUpTextColour    = OnButtonTextColour
+    #ZoomUpButtonColour      = OnButtonColour
+    #ZoomUpButtonPosition    = (1460,60)
+
+    #ZoomDownTextColour  = OffButtonTextColour
+    #ZoomDownButtonColour      = OffButtonColour
+    #ZoomDownButtonPosition    = (1390,60)
+
+   
+
+    
     """used for testing
     x = 500
     y = 0
@@ -128,6 +150,8 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
     drawing    = False
     zoom       = 1
     linesexist = False
+
+    
     """used for testing
     P = ['x value not relevant', 0] #test for panning
     K = [0,0] #test for panning 
@@ -185,14 +209,21 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
         #code in progress
         map = pygame.transform.scale(map, [round(MapSize[0] * zoom), round(MapSize[1] * zoom)])
         graphbutton = (pygame.font.SysFont('arial', 32)).render('Make Graph', True, GraphButtonTextColour, GraphButtonColour)
+        undobutton  = (pygame.font.SysFont('arial', 25)).render(' Undo ', True, UndoButtonTextColour, UndoButtonColour)
+        redobutton  = (pygame.font.SysFont('arial', 25)).render(' Redo ', True, RedoButtonTextColour, RedoButtonColour)
+        #zoomupbutton   = (pygame.font.SysFont('arial', 13)).render('   +   ', True, ZoomUpTextColour, ZoomUpButtonColour)
+        #zoomdownbutton = (pygame.font.SysFont('arial', 13)).render('   -   ', True, ZoomDownTextColour, ZoomDownButtonColour)
+        #zoom%         = (pygame.font.SysFont('arial', 13)).render(str(str((zoom * 100)) + '%'), True, (0,0,0))
 
         screen.blit(map, MapToScreenOffset) # the map surface is blit to the screen, with offsets to account for panning, zooming and the Options bar
         screen.blit(optionsbar, (0,0))
         mapbox = pygame.transform.scale(map, [192, 88])
         screen.blit(optionstext, (20,20))
         pygame.draw.rect(mapbox, (0,0,100), pygame.Rect(-(MapToScreenOffset[0])/(8*zoom), -(MapToScreenOffset[1] - 100)/(8*zoom), 192/zoom, 88/zoom ), 2)
-        screen.blit(mapbox, (1100,6)) 
-        screen.blit(graphbutton , (550,10))
+        screen.blit(mapbox, MapBoxPosition) 
+        screen.blit(graphbutton , GraphButtonPosition)
+        screen.blit(undobutton , UndoButtonPosition)
+        screen.blit(redobutton , RedoButtonPosition)
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -222,7 +253,7 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
                     InitialOffset        = [MapToScreenOffset[0], MapToScreenOffset[1]]
 
                 if event.button == 1: #the left click
-                    if pressing((550,10), graphbutton, pygame.mouse.get_pos()) and (GraphButtonColour ==  OnButtonColour):
+                    if pressing(GraphButtonPosition, graphbutton, pygame.mouse.get_pos()) and (GraphButtonColour ==  OnButtonColour):
                         #mapobject = make_graph(Lines)
                         """used for testing"""
                         print("make_graph()")
@@ -288,7 +319,7 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
                     if drawing == True:
                         drawing     = False
                         """used for testing"""
-                        print(Newline)
+                        print(NewLine)
                         """"""
                         if len(NewLine) > 1: #a single coordinate is not valid as a line
                             Lines.append(NewLine)
