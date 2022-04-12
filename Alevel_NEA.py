@@ -46,7 +46,7 @@ def check_vertex(CoordinateSet1, CoordinateSet2): #to check if the lines between
             y = (m1*(x - x1_1)) + y1_1
 
         if  (min(x1_1,x1_2) <= x <= max(x1_1,x1_2)) and (min(x2_1,x2_2) <= x <= max(x2_1,x2_2)) and (min(y1_1,y1_2) <= y <= max(y1_1,y1_2)) and (min(y2_1,y2_2) <= y <= max(y2_1,y2_2)):
-            return (round(x, 2),round(y, 2))
+            return (x,y) #unrounded
         else:
             """used for testing
             print('intersections outside coordinate ranges')
@@ -60,12 +60,15 @@ def check_vertex(CoordinateSet1, CoordinateSet2): #to check if the lines between
             except ZeroDivisionError:
                 m2 = math.inf
 
-            if (m1 == m2) or (CoordinateSet2 == tuple(CoordinateSet1[0])) or (CoordinateSet2 == tuple(CoordinateSet1[1])):
+            if (round(m1, 8) == round(m2, 8)) or (CoordinateSet2 == tuple(CoordinateSet1[0])) or (CoordinateSet2 == tuple(CoordinateSet1[1])):
                 return True
 
                 """used for testing
             elif (m1 != m2):
-                print('gradients not the same')
+                print('m1 = ', end = "")
+                print(m1)
+                print('m2 = ', end = "")
+                print(m2)
                 """
             """used for testing
         else:
@@ -224,9 +227,22 @@ class map_class:
         self.get_nodes()
         self.graph = {EachNode:[] for EachNode in self.Nodes}
         self.get_connections()
-        """used for testing"""
-        print(self.graph)
-        """"""
+
+        InitKeys = {key: self.graph[key] for key in self.graph.keys()}
+
+        for EachKey in InitKeys: #rounding all the nodes
+            self.graph[(round(EachKey[0], 2), round(EachKey[1], 2))] = self.graph.pop(EachKey)
+        
+        del InitKeys
+
+        for EachValue in self.graph: #rounding all the connections
+            """used for testing
+            print(self.graph[EachValue])
+            """
+            for ec in range(0, len(self.graph[EachValue])):
+                self.graph[EachValue][ec][0] = (round(self.graph[EachValue][ec][0][0], 2), round(self.graph[EachValue][ec][0][1], 2) )
+
+
 
 
                                     
@@ -264,7 +280,7 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
     ZoomTextPosition = (1410,45)
     ZoomPercentagePosition    = (1440,70)
      
-    ZoomUpTextColour    = OnButtonTextColour
+    ZoomUpTextColour        = OnButtonTextColour
     ZoomUpButtonColour      = OnButtonColour
     ZoomUpButtonPosition    = (1475,70)
 
@@ -295,6 +311,7 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
     zooming    = False
     drawing    = False
     zoom       = 1
+    zoomplus   = False
     linesexist = False
 
     
@@ -342,6 +359,12 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
         except:
             pass
         
+        try:
+            for EachNode in mapobject.Nodes:
+                pygame.draw.circle(map, (0, 0, 0), EachNode, 4)
+
+        except: pass
+
         if linesexist:
             GraphButtonTextColour =  OnButtonTextColour
             GraphButtonColour     =  OnButtonColour
@@ -420,11 +443,41 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
                     if pressing(GraphButtonPosition, graphbutton, pygame.mouse.get_pos()) and (GraphButtonColour ==  OnButtonColour):
                         mapobject = map_class(Lines)
                         mapobject.make_graph()
-                        """used for testing"""
+                        """used for testing
                         print("make_graph()")
+                        """
+                        """used for testing"""
+                        print(mapobject.graph)
                         """"""
-                        pass
-                    else:
+                    elif pressing(ZoomUpButtonPosition, zoomupbutton, pygame.mouse.get_pos()) and (ZoomUpButtonColour ==  OnButtonColour):
+                        initialzoom = zoom
+                        zooming     = True
+                        zoomplus    = True
+
+                        MouseToSurfaceOffset = [(768 - MapToScreenOffset[0]) , (450 - MapToScreenOffset[1])]
+                        InitialOffset        = [MapToScreenOffset[0], MapToScreenOffset[1]]
+                        
+                        zoom += 0.25
+                    elif pressing(ZoomUpButtonPosition, zoomupbutton, pygame.mouse.get_pos()): pass
+                    elif pressing(ZoomDownButtonPosition, zoomdownbutton, pygame.mouse.get_pos()) and (ZoomDownButtonColour ==  OnButtonColour):
+                        initialzoom = zoom
+                        
+                        MouseToSurfaceOffset = [(768 - MapToScreenOffset[0]) , (450 - MapToScreenOffset[1])]
+                        InitialOffset        = [MapToScreenOffset[0], MapToScreenOffset[1]]
+                        
+                        zoom -= 0.25
+                        
+                        zoomduringzooming = zoom/initialzoom
+                        MapToScreenOffset = [InitialOffset[0] - ((zoomduringzooming - 1) * MouseToSurfaceOffset[0]) , InitialOffset[1] - ((zoomduringzooming - 1) * MouseToSurfaceOffset[1])]
+                        print(MapToScreenOffset)
+                        if (MapToScreenOffset[0] + (zoom * 1536)) < 1536: MapToScreenOffset[0] -= 1536 - ((zoom * 1536)+ MapToScreenOffset[0]) #problem 
+                        if (MapToScreenOffset[1] + (zoom * 700)) < 800: MapToScreenOffset[1] -= 800 - ((zoom * 700)+ MapToScreenOffset[1])     #problem
+                        if MapToScreenOffset[0] > 0: MapToScreenOffset[0] = 0
+                        if MapToScreenOffset[1] > 100: MapToScreenOffset[1] = 100
+
+                        print(MapToScreenOffset)
+                    elif pressing(ZoomDownButtonPosition, zoomdownbutton, pygame.mouse.get_pos()): pass
+                    elif (0 < round(pygame.mouse.get_pos()[0]) < 1536) and (0 < round(pygame.mouse.get_pos()[1]) < 700):
                         drawing     = True
                         Point = [round((pygame.mouse.get_pos()[0] - MapToScreenOffset[0])/zoom), round((pygame.mouse.get_pos()[1] - MapToScreenOffset[1])/zoom)]
                         #this Point is based on the map surface of default size
@@ -451,6 +504,10 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
                         #offset altered to account for the zooming
                     else:
                         zoom = initialzoom #if the contraints aren't fullfilled, then the zoom is canceled, and the offset according to what would have been is not carried out
+                    
+                    if zoomplus == True: 
+                        zooming  = False
+                        zoomplus = False
 
                 """used for testing 
                 if drawing:
