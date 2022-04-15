@@ -1,6 +1,7 @@
 
 import pygame, sys
 import math
+import time
 pygame.init()
 
 
@@ -82,15 +83,19 @@ def distance_between(Point1, Point2):
 class map_class:
     
     def __init__(self, Lines):
-        self.Lines = Lines
-        self.Nodes = []
-        self.graph = {}
+        self.Lines  = Lines
+        self.Nodes  = []
+        self.graph  = {}
+        self.colour = (192,192,192)
 
-    def get_nodes(self):
+    def get_nodes(self, endnodes):
             """used for testing
             print(len(self.Lines))
             """
             for l in range(0, (len(self.Lines))):
+                if endnodes:
+                    self.Nodes.append(tuple(self.Lines[l][0]))
+                    self.Nodes.append(tuple(self.Lines[l][len(self.Lines[l])- 1]))
                 for c in range(0, (len(self.Lines[l])-1)):
                     for l2 in range(l, (len(self.Lines))):
                         if l2 == l:
@@ -150,7 +155,7 @@ class map_class:
                         for EachVertex in self.Nodes:
                             if check_vertex((EachLine[v1],EachNode), EachVertex):
                                 d = distance_between(EachVertex, EachNode)
-                                if d != 0:   
+                                if round(d,1) != 0:   
                                     nc = True
                                     self.graph[EachNode].append([EachVertex, round(d,2)])
 
@@ -164,7 +169,7 @@ class map_class:
                             for EachVertex in self.Nodes:
                                 if check_vertex((EachLine[v2],EachLine[v2 - 1]),EachVertex):
                                     d += distance_between(EachLine[v2],EachVertex)
-                                    if d != 0: #if the 
+                                    if round(d,1) != 0: #if the 
                                         self.graph[EachNode].append([EachVertex,round(d,2)])
                                         nc = True
                                         break  
@@ -177,7 +182,7 @@ class map_class:
                         for EachVertex in self.Nodes:
                             if check_vertex((EachLine[v1 + 1],EachNode), EachVertex):
                                 d = distance_between(EachVertex, EachNode)
-                                if d != 0:
+                                if round(d,1) != 0:
                                     nc = True
                                     self.graph[EachNode].append([EachVertex, round(d,2)])
                         #"""
@@ -196,7 +201,7 @@ class map_class:
                                     print(EachVertex)
                                     """
                                     d += distance_between(EachLine[v2],EachVertex)
-                                    if d != 0:
+                                    if round(d,1) != 0:
                                         self.graph[EachNode].append([EachVertex,round(d,2)])
                                         nc = True
                                         break
@@ -223,8 +228,8 @@ class map_class:
 #comment what
 
 
-    def make_graph(self):
-        self.get_nodes()
+    def make_graph(self, endnodes = True):
+        self.get_nodes(endnodes)
         self.graph = {EachNode:[] for EachNode in self.Nodes}
         self.get_connections()
 
@@ -244,13 +249,49 @@ class map_class:
 
 
 
+    def select_graph(self):
+        global SubGraphs
+        SubGraphs = [] #has all the subgraphs in a list
+        ToBeFound = [] 
+        for EachNode in self.graph.keys(): #add all the nodes in a list
+            ToBeFound.append(EachNode) #to be found
 
-                                    
+        while len(ToBeFound) != 0: #graph still needs traversing if there are still nodes to be found
+            subgraph = {}
+            queue = [ToBeFound[0]] #starting vertex for traversal
+            while len(queue) != 0:
+                for EachConnection in self.graph[queue[0]]: #goes through each of the connections to a node
+                    if (EachConnection[0] in ToBeFound) and (EachConnection[0] not in queue):
+                        queue.append(EachConnection[0]) #adds connections to the node, so they themselves can be checked for their connections
+
+                ToBeFound.remove(queue[0]) #the node has been found and checked for connections
+                subgraph.update({queue[0]:self.graph[queue[0]]}) #the node is part of the same subgraph as the rest in the iteration, as they are only added to the queue in the first place as they connect another node
+                queue.pop(0) #so the next node in the list can be checked
+            
+            SubGraphs.append(subgraph)
+
+        return display_mapping_editor(self.Lines,self.colour, False, False, True)
+
+
+
+
 def pressing(buttonposition, button, mouseposition):
    if (buttonposition[0]) < mouseposition[0] < (buttonposition[0] + (button.get_rect()).width) and (buttonposition[1]) < mouseposition[1] < (buttonposition[1] + (button.get_rect()).height): return True
    else: return False   
 
-def display_mapping_editor(colour): # to be changed to Map.colour when OOP is implimented + more parameters(like map, user)
+def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, makinggraph = False, selectinggraph = False): # to be changed to Map.colour when OOP is implimented + more parameters(like map, user)
+
+    if makinggraph or selectinggraph:
+        mgbutton = False
+        canpan   = True
+        canzoom  = True
+        candraw  = False
+
+    if editing:
+        mgbutton = True
+        canpan   = True
+        canzoom  = True
+        candraw  = True
 
   #  colour = Map.colour #to be implimented
     screen  = pygame.display.set_mode((1536,800))
@@ -310,20 +351,21 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
     panning    = False
     zooming    = False
     drawing    = False
+    ctrl       = False
     zoom       = 1
     zoomplus   = False
     linesexist = False
 
-    
+    t = time.time()
     """used for testing
     P = ['x value not relevant', 0] #test for panning
     K = [0,0] #test for panning 
     """
-    Lines = []
-    #all defaults
 
+    """used for testing"""
+    #Lines = [[[400, 300], [1200, 300]]]
+    """ """
     while displaying:
-       
 
         """used for testing
         map = pygame.Surface(MapSize)
@@ -361,18 +403,73 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
         
         try:
             for EachNode in mapobject.Nodes:
-                pygame.draw.circle(map, (0, 0, 0), EachNode, 4)
+                pygame.draw.circle(map, (0, 0, 0), EachNode, 4) #to be changed
+            
+            """used for testing
+            screen.blit(map, MapToScreenOffset)
+            pygame.display.update()
+
+            input('test get connections')
+
+            for EachKey in mapobject.graph.keys():
+                
+                pygame.draw.circle(map, (66, 66, 245), EachKey, 10)
+                print(EachKey)
+                
+                
+                for EachConnection in mapobject.graph[EachKey]:
+                    pygame.draw.circle(map, (66, 245, 66), EachConnection[0], 5)
+                
+                screen.blit(map, MapToScreenOffset)
+                pygame.display.update()
+                input('next node')
+                for EachNode in mapobject.Nodes: pygame.draw.circle(map, (0, 0, 0), EachNode, 10)
+
+            """
 
         except: pass
 
-        if linesexist:
+        if selectinggraph:
+            """
+            try:
+                SubGraphLines = []
+                for EachNode in list(SubGraph.keys()):
+
+                    for EachLine in Lines:
+                        if ((max(EachLine[l][0] for l in range(0,len(EachLine))) >= EachNode[0] >= min(EachLine[l][0] for l in range(0,len(EachLine)))) and
+                            (max(EachLine[l][1] for l in range(0,len(EachLine))) >= EachNode[1] >= min(EachLine[l][1] for l in range(0,len(EachLine))))):
+                                for c in range(0, EachLine - 1):
+                                    if check_vertex((EachLine[c], EachLine[c+1]), EachNode):
+                                        if EachLine not in SubGraphLines: SubGraphLines.append(EachLine)
+
+
+                for EachLine in SubGraphLines:
+                    pygame.draw.lines(map, (3, 123, 252) , False ,EachLine, width = 5)
+                
+            except:  pass    
+            """
+            if ((time.time() - t) % 2):
+                time.sleep()
+                S += 1
+
+            S = S % len(SubGraphs)
+
+            for EachNode in SubGraphs[S].keys():
+                pygame.draw.circle(map, (65, 250, 65), EachNode, 4) #to be changed
+            
+            
+                
+            
+            
+
+        if linesexist and mgbutton:
             GraphButtonTextColour =  OnButtonTextColour
             GraphButtonColour     =  OnButtonColour
         else:
             GraphButtonTextColour =  OffButtonTextColour #if there are no lines, a graph can't be made
             GraphButtonColour     =  OffButtonColour
 
-        if zoom < 3:
+        if zoom < 3 and canzoom:
             ZoomUpTextColour   = OnButtonTextColour
             ZoomUpButtonColour = OnButtonColour
         else:
@@ -418,21 +515,45 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
             if event.type == pygame.QUIT: #allows the closing of the window
                 displaying = False
                 pygame.display.quit()
-
+            """
+            if selectinggraph:
+                
+                found    = False
+                SubGraph = None
+                for EachGraph in SubGraphs:
+                    
+                    if not found:
+                        for n in range(0, len(EachGraph.keys()) -1):
+                            if check_vertex((list(EachGraph.keys())[n], (list(EachGraph.keys())[n+1])),pygame.mouse.get_pos()):
+                                SubGraph = EachGraph
+                                found = True
+                                break
+                            elif (distance_between(list(EachGraph.keys())[n],pygame.mouse.get_pos()) <= 5) and (SubGraph == None):
+                                SubGraph = EachGraph
+            
+            """  
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     zoom = 1
                     MapToScreenOffset = [0,100]
 
+                if (event.key == pygame.K_LCTRL) or (event.key == pygame.K_RCTRL): 
+                    ctrl = True 
+
+
             if event.type == pygame.MOUSEBUTTONDOWN:
 
                 if event.button == 3: #the right click
-                    panning         = True
-                    InitialMousePos = pygame.mouse.get_pos()
-                    InitialOffset   = [MapToScreenOffset[0], MapToScreenOffset[1]]
+                    if (GraphButtonPosition, graphbutton, pygame.mouse.get_pos()) and (GraphButtonColour ==  OnButtonColour):
+                        mapobject.select_graph()
+
+                    elif canpan: 
+                        panning         = True
+                        InitialMousePos = pygame.mouse.get_pos()
+                        InitialOffset   = [MapToScreenOffset[0], MapToScreenOffset[1]]
 
 
-                if (event.button == 4) or (event.button == 5) and (zooming == False): #the mouse scroll
+                if (event.button == 4) or (event.button == 5) and (zooming == False) and canzoom: #the mouse scroll
                     initialzoom = zoom
                     zooming     = True
 
@@ -440,15 +561,23 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
                     InitialOffset        = [MapToScreenOffset[0], MapToScreenOffset[1]]
 
                 if event.button == 1: #the left click
+                    if selectinggraph:
+                        return SubGraph
+
                     if pressing(GraphButtonPosition, graphbutton, pygame.mouse.get_pos()) and (GraphButtonColour ==  OnButtonColour):
                         mapobject = map_class(Lines)
-                        mapobject.make_graph()
+
+                        if ctrl:
+                            mapobject.make_graph(False)
+                        elif not(ctrl):
+                            mapobject.make_graph(True)
+
                         """used for testing
                         print("make_graph()")
                         """
-                        """used for testing"""
+                        """used for testing
                         print(mapobject.graph)
-                        """"""
+                        """
                     elif pressing(ZoomUpButtonPosition, zoomupbutton, pygame.mouse.get_pos()) and (ZoomUpButtonColour ==  OnButtonColour):
                         initialzoom = zoom
                         zooming     = True
@@ -477,7 +606,7 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
 
                         print(MapToScreenOffset)
                     elif pressing(ZoomDownButtonPosition, zoomdownbutton, pygame.mouse.get_pos()): pass
-                    elif (0 < round(pygame.mouse.get_pos()[0]) < 1536) and (0 < round(pygame.mouse.get_pos()[1]) < 700):
+                    elif (0 < round(pygame.mouse.get_pos()[0]) < 1536) and (0 < round(pygame.mouse.get_pos()[1]) < 700) and candraw:
                         drawing     = True
                         Point = [round((pygame.mouse.get_pos()[0] - MapToScreenOffset[0])/zoom), round((pygame.mouse.get_pos()[1] - MapToScreenOffset[1])/zoom)]
                         #this Point is based on the map surface of default size
@@ -523,7 +652,11 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
                         NewLine = [Point[0] , Point[1]]
                         print(NewLine)
                 """
-                        
+            if event.type == pygame.KEYUP:
+
+                if (event.key == pygame.K_LCTRL) or (event.key == pygame.K_RCTRL): 
+                    ctrl = False           
+
 
             if event.type == pygame.MOUSEBUTTONUP:
 
@@ -545,6 +678,7 @@ def display_mapping_editor(colour): # to be changed to Map.colour when OOP is im
                         """"""
                         if len(NewLine) > 1: #a single coordinate is not valid as a line
                             Lines.append(NewLine)
+
                         """used for testing
                         print(Lines)
                         """
@@ -617,4 +751,4 @@ print(get_nodes(Lines))
 
 colour = (192,192,192)
 
-display_mapping_editor(colour)
+display_mapping_editor()
