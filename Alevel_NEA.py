@@ -3,7 +3,24 @@ import pygame, sys
 import math
 import time
 pygame.init()
+def check_cycle(StartNode, NodeFrom, List, D):
+    for EachConnection in D[StartNode[0]]:
+        if EachConnection != NodeFrom:
+            if EachConnection in List:
+                """used for testing"""
+                print(EachConnection)
+                #pygame.draw.circle(screen, (0, 0, 0), EachConnection, 4) #to be changed
+                #screen.blit(map, (0,0,0))
+                #pygame.display.update()
+                #breakpoint()
+                """ """
+                return True, EachConnection[0]
+            List.append(EachConnection)
+            C, E = check_cycle(EachConnection, [StartNode[0], EachConnection[1]] , List, D)
+            print(E)
+            if C == True: return C, E   #E used for testing
 
+    return False, None
 
 def check_vertex(CoordinateSet1, CoordinateSet2): #to check if the lines between two sets of coordinates intersect
   
@@ -224,7 +241,7 @@ class map_class:
                     temp.append(i)
 
             self.graph[each] = temp
-
+            
 #comment what
 
 
@@ -272,26 +289,43 @@ class map_class:
 
         return display_mapping_editor(self.Lines,self.colour, False, False, True)
 
+    def perform_algorithm(self):
 
-
+        subgraph = self.select_graph()
+        C,E = check_cycle(list(subgraph.values())[0][0], None, [list(subgraph.values())[0][0]], subgraph)
+        """E used for testing"""
+        print(C)
+        return E
+        """ """
+        
 
 def pressing(buttonposition, button, mouseposition):
    if (buttonposition[0]) < mouseposition[0] < (buttonposition[0] + (button.get_rect()).width) and (buttonposition[1]) < mouseposition[1] < (buttonposition[1] + (button.get_rect()).height): return True
    else: return False   
 
-def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, makinggraph = False, selectinggraph = False): # to be changed to Map.colour when OOP is implimented + more parameters(like map, user)
 
-    if makinggraph or selectinggraph:
-        mgbutton = False
+def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, makinggraph = False, selectinggraph = False, selectingalgorithm = False): # to be changed to Map.colour when OOP is implimented + more parameters(like map, user)
+    #pygame.time.Clock().tick(100)
+    if makinggraph:
+        mgbutton = False #make graph button
         canpan   = True
         canzoom  = True
         candraw  = False
+        pabutton = False #perform algorithm button
+
+    if selectingalgorithm or selectinggraph:
+        mgbutton = False #make graph button
+        canpan   = False
+        canzoom  = False
+        candraw  = False
+        pabutton = False #perform algorithm button
 
     if editing:
         mgbutton = True
         canpan   = True
         canzoom  = True
         candraw  = True
+        pabutton = True
 
   #  colour = Map.colour #to be implimented
     screen  = pygame.display.set_mode((1536,800))
@@ -310,12 +344,19 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
     GraphButtonTextColour = OffButtonTextColour
     GraphButtonColour     = OffButtonColour
     GraphButtonPosition   = (550,10)
+
     UndoButtonTextColour  = OffButtonTextColour
     UndoButtonColour      = OffButtonColour
     UndoButtonPosition    = (1390,10)
+
     RedoButtonTextColour  = OffButtonTextColour
     RedoButtonColour      = OffButtonColour
     RedoButtonPosition    = (1460,10)
+
+    PerformAlgorithmTextColour     = OffButtonTextColour
+    PerformAlgorithmButtonColour   = OffButtonColour
+    PerformAlgorithmButtonPosition = (510,55)
+
     zoomtext    = (pygame.font.SysFont('arial', 16)).render('      Zoom        ', True, (0,0,0)) 
 
     ZoomTextPosition = (1410,45)
@@ -357,10 +398,12 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
     linesexist = False
 
     t = time.time()
+    S = 0 # which subgraph on
     """used for testing
     P = ['x value not relevant', 0] #test for panning
     K = [0,0] #test for panning 
     """
+    E = None #E used for testing
 
     """used for testing"""
     #Lines = [[[400, 300], [1200, 300]]]
@@ -433,7 +476,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
             """
             try:
                 SubGraphLines = []
-                for EachNode in list(SubGraph.keys()):
+                for EachNode in list(SubGraphs[S].keys()):
 
                     for EachLine in Lines:
                         if ((max(EachLine[l][0] for l in range(0,len(EachLine))) >= EachNode[0] >= min(EachLine[l][0] for l in range(0,len(EachLine)))) and
@@ -448,26 +491,72 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
                 
             except:  pass    
             """
-            if ((time.time() - t) % 2):
-                time.sleep()
+            #print((time.time() - t))
+            """
+            if round(((time.time() - t) % 2),1) == 0:
+                time.sleep(0.2)
                 S += 1
+            """
 
             S = S % len(SubGraphs)
 
-            for EachNode in SubGraphs[S].keys():
-                pygame.draw.circle(map, (65, 250, 65), EachNode, 4) #to be changed
-            
-            
-                
             
             
 
+            SubGraphLines = []
+            for EachNode in list(SubGraphs[S].keys()):
+
+                 for EachLine in Lines:
+                     if ((max(EachLine[l][0] for l in range(0,len(EachLine))) >= EachNode[0] >= min(EachLine[l][0] for l in range(0,len(EachLine)))) and
+                        (max(EachLine[l][1] for l in range(0,len(EachLine))) >= EachNode[1] >= min(EachLine[l][1] for l in range(0,len(EachLine))))):
+                         for c in range(0, len(EachLine) - 1):
+                             if check_vertex((EachLine[c], EachLine[c+1]), EachNode):
+                                 if EachLine not in SubGraphLines: SubGraphLines.append(EachLine)
+
+
+            for EachLine in SubGraphLines:
+                 pygame.draw.lines(map, (3, 123, 252) , False ,EachLine, width = 5)
+
+            for EachNode in SubGraphs[S].keys():
+                pygame.draw.circle(map, (65, 250, 65), EachNode, 4) #to be changed
+                
+        try:
+            SubGraphLines = []
+            for EachNode in list(SubGraph.keys()):
+
+                 for EachLine in Lines:
+                     if ((max(EachLine[l][0] for l in range(0,len(EachLine))) >= EachNode[0] >= min(EachLine[l][0] for l in range(0,len(EachLine)))) and
+                        (max(EachLine[l][1] for l in range(0,len(EachLine))) >= EachNode[1] >= min(EachLine[l][1] for l in range(0,len(EachLine))))):
+                         for c in range(0, len(EachLine) - 1):
+                             if check_vertex((EachLine[c], EachLine[c+1]), EachNode):
+                                 if EachLine not in SubGraphLines: SubGraphLines.append(EachLine)
+
+
+            for EachLine in SubGraphLines:
+                 pygame.draw.lines(map, (245, 185, 66) , False ,EachLine, width = 5)
+
+            for EachNode in SubGraph.keys():
+                pygame.draw.circle(map, (65, 250, 65), EachNode, 4) #to be changed
+        except:pass
+         
+        """ used for testing"""
+        if isinstance(E, tuple): pygame.draw.circle(map, (245, 185, 66), E, 4) #to be changed
+        """ """
         if linesexist and mgbutton:
             GraphButtonTextColour =  OnButtonTextColour
             GraphButtonColour     =  OnButtonColour
         else:
             GraphButtonTextColour =  OffButtonTextColour #if there are no lines, a graph can't be made
             GraphButtonColour     =  OffButtonColour
+        
+        try:
+            mapobject = mapobject #if the graph has been made yet
+            if pabutton: #if the current page allows this button
+                PerformAlgorithmTextColour     = OnButtonTextColour
+                PerformAlgorithmButtonColour   = OnButtonColour
+        except:
+                PerformAlgorithmTextColour     = OffButtonTextColour
+                PerformAlgorithmButtonColour   = OffButtonColour
 
         if zoom < 3 and canzoom:
             ZoomUpTextColour   = OnButtonTextColour
@@ -488,12 +577,14 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
         
         #code in progress
         map = pygame.transform.scale(map, [round(MapSize[0] * zoom), round(MapSize[1] * zoom)])
-        graphbutton = (pygame.font.SysFont('arial', 32)).render('Make Graph', True, GraphButtonTextColour, GraphButtonColour)
+        
+        graphbutton = (pygame.font.SysFont('arial', 32)).render(' Make Graph ', True, GraphButtonTextColour, GraphButtonColour)
         undobutton  = (pygame.font.SysFont('arial', 25)).render(' Undo ', True, UndoButtonTextColour, UndoButtonColour)
         redobutton  = (pygame.font.SysFont('arial', 25)).render(' Redo ', True, RedoButtonTextColour, RedoButtonColour)
         zoomupbutton   = (pygame.font.SysFont('arial', 13)).render('    +    ', True, ZoomUpTextColour, ZoomUpButtonColour)
         zoomdownbutton = (pygame.font.SysFont('arial', 13)).render('    -    ', True, ZoomDownTextColour, ZoomDownButtonColour)
         zoompercentage = (pygame.font.SysFont('arial', 13)).render(str(str(int(zoom * 100)) + '%'), True, (0,0,0))
+        performalgorithmbutton = (pygame.font.SysFont('arial', 32)).render(' Perform Algorithm ', True, PerformAlgorithmTextColour, PerformAlgorithmButtonColour)
 
         screen.blit(map, MapToScreenOffset) # the map surface is blit to the screen, with offsets to account for panning, zooming and the Options bar
         screen.blit(optionsbar, (0,0))
@@ -502,12 +593,13 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
         pygame.draw.rect(mapbox, (0,0,100), pygame.Rect(-(MapToScreenOffset[0])/(8*zoom), -(MapToScreenOffset[1] - 100)/(8*zoom), 192/zoom, 88/zoom ), 2)
         screen.blit(mapbox, MapBoxPosition) 
         screen.blit(graphbutton , GraphButtonPosition)
-        screen.blit(undobutton , UndoButtonPosition)
-        screen.blit(redobutton , RedoButtonPosition)
-        screen.blit(zoomtext , ZoomTextPosition)
+        screen.blit(undobutton  , UndoButtonPosition)
+        screen.blit(redobutton  , RedoButtonPosition)
+        screen.blit(zoomtext, ZoomTextPosition)
         screen.blit(zoompercentage , ZoomPercentagePosition)
-        screen.blit(zoomupbutton , ZoomUpButtonPosition)
+        screen.blit(zoomupbutton   , ZoomUpButtonPosition)
         screen.blit(zoomdownbutton , ZoomDownButtonPosition)
+        screen.blit(performalgorithmbutton , PerformAlgorithmButtonPosition)
         pygame.display.update()
 
         for event in pygame.event.get():
@@ -521,7 +613,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
                 found    = False
                 SubGraph = None
                 for EachGraph in SubGraphs:
-                    
+ 
                     if not found:
                         for n in range(0, len(EachGraph.keys()) -1):
                             if check_vertex((list(EachGraph.keys())[n], (list(EachGraph.keys())[n+1])),pygame.mouse.get_pos()):
@@ -532,7 +624,23 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
                                 SubGraph = EachGraph
             
             """  
+
             if event.type == pygame.KEYDOWN:
+
+                if selectinggraph:
+                    if event.key == pygame.K_RETURN:
+                        print('enter pressed')
+                        return SubGraphs[S]
+
+                    if event.key == pygame.K_RIGHT:
+                        t -= (time.time() - t) % 2
+                        S += 1
+
+                    if event.key == pygame.K_LEFT:
+                        t -= (time.time() - t) % 2
+                        S -= 1
+                   
+
                 if event.key == pygame.K_ESCAPE:
                     zoom = 1
                     MapToScreenOffset = [0,100]
@@ -542,18 +650,21 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
 
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-
+                """used for testing"""
                 if event.button == 3: #the right click
-                    if (GraphButtonPosition, graphbutton, pygame.mouse.get_pos()) and (GraphButtonColour ==  OnButtonColour):
-                        mapobject.select_graph()
+                    if pressing(GraphButtonPosition, graphbutton, pygame.mouse.get_pos()) and (GraphButtonColour ==  OnButtonColour):
+                       SubGraph = mapobject.select_graph() 
+               # """ """                   
 
-                    elif canpan: 
+                    if canpan: 
                         panning         = True
                         InitialMousePos = pygame.mouse.get_pos()
                         InitialOffset   = [MapToScreenOffset[0], MapToScreenOffset[1]]
 
 
                 if (event.button == 4) or (event.button == 5) and (zooming == False) and canzoom: #the mouse scroll
+                    print('zoomed from: ', end = "")
+                    print(pygame.mouse.get_pos())
                     initialzoom = zoom
                     zooming     = True
 
@@ -562,7 +673,11 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
 
                 if event.button == 1: #the left click
                     if selectinggraph:
-                        return SubGraph
+                        print('left click')
+                        return SubGraphs[S]
+
+
+
 
                     if pressing(GraphButtonPosition, graphbutton, pygame.mouse.get_pos()) and (GraphButtonColour ==  OnButtonColour):
                         mapobject = map_class(Lines)
@@ -599,18 +714,22 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
                         zoomduringzooming = zoom/initialzoom
                         MapToScreenOffset = [InitialOffset[0] - ((zoomduringzooming - 1) * MouseToSurfaceOffset[0]) , InitialOffset[1] - ((zoomduringzooming - 1) * MouseToSurfaceOffset[1])]
                         print(MapToScreenOffset)
-                        if (MapToScreenOffset[0] + (zoom * 1536)) < 1536: MapToScreenOffset[0] -= 1536 - ((zoom * 1536)+ MapToScreenOffset[0]) #problem 
-                        if (MapToScreenOffset[1] + (zoom * 700)) < 800: MapToScreenOffset[1] -= 800 - ((zoom * 700)+ MapToScreenOffset[1])     #problem
+                        if (MapToScreenOffset[0] + (zoom * 1536)) < 1536: MapToScreenOffset[0] += 1536 - ((zoom * 1536)+ MapToScreenOffset[0]) #problem 
+                        if (MapToScreenOffset[1] + (zoom * 700)) < 800: MapToScreenOffset[1] += 800 - ((zoom * 700)+ MapToScreenOffset[1])     #problem
                         if MapToScreenOffset[0] > 0: MapToScreenOffset[0] = 0
                         if MapToScreenOffset[1] > 100: MapToScreenOffset[1] = 100
 
-                        print(MapToScreenOffset)
+                        #print(MapToScreenOffset)
                     elif pressing(ZoomDownButtonPosition, zoomdownbutton, pygame.mouse.get_pos()): pass
-                    elif (0 < round(pygame.mouse.get_pos()[0]) < 1536) and (0 < round(pygame.mouse.get_pos()[1]) < 700) and candraw:
+                    elif (0 < round(pygame.mouse.get_pos()[0]) < 1536) and (100 < round(pygame.mouse.get_pos()[1]) < 800) and candraw:
                         drawing     = True
                         Point = [round((pygame.mouse.get_pos()[0] - MapToScreenOffset[0])/zoom), round((pygame.mouse.get_pos()[1] - MapToScreenOffset[1])/zoom)]
                         #this Point is based on the map surface of default size
                         NewLine = [[Point[0] , Point[1]]]
+
+                    if pressing(PerformAlgorithmButtonPosition, performalgorithmbutton, pygame.mouse.get_pos()) and (PerformAlgorithmButtonColour == OnButtonColour):
+                        E = mapobject.perform_algorithm()  #E used for testing
+                        print('perform_algorithm()')
 
                 if event.button == 4 and zoom < 3: #zoom in
                     zoom += 0.25
@@ -730,7 +849,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
                     MapToScreenOffset[1] -= o
 
             if pygame.mouse.get_pos()[0] == 0: 
-                if (MapToScreenOffset[0] + o) <= 100:
+                if (MapToScreenOffset[0] + o) <= 0:
                     MapToScreenOffset[0] += o 
 
             elif pygame.mouse.get_pos()[0] >= 1534:#decreased from 1536
