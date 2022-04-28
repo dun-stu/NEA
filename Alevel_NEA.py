@@ -7,17 +7,17 @@ def check_cycle(StartNode, NodeFrom, List, D):
     for EachConnection in D[StartNode[0]]:
         if EachConnection != NodeFrom:
             if EachConnection in List:
-                """used for testing"""
+                """used for testing
                 print(EachConnection)
                 #pygame.draw.circle(screen, (0, 0, 0), EachConnection, 4) #to be changed
                 #screen.blit(map, (0,0,0))
                 #pygame.display.update()
                 #breakpoint()
-                """ """
+                """
                 return True, EachConnection[0]
             List.append(EachConnection)
             C, E = check_cycle(EachConnection, [StartNode[0], EachConnection[1]] , List, D)
-            print(E)
+           # print(E)
             if C == True: return C, E   #E used for testing
 
     return False, None
@@ -539,9 +539,9 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
                 pygame.draw.circle(map, (65, 250, 65), EachNode, 4) #to be changed
         except:pass
          
-        """ used for testing"""
+        """ used for testing
         if isinstance(E, tuple): pygame.draw.circle(map, (245, 185, 66), E, 4) #to be changed
-        """ """
+        """ 
         if linesexist and mgbutton:
             GraphButtonTextColour =  OnButtonTextColour
             GraphButtonColour     =  OnButtonColour
@@ -629,7 +629,9 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
 
                 if selectinggraph:
                     if event.key == pygame.K_RETURN:
+                        """ used for testing 
                         print('enter pressed')
+                        """
                         return SubGraphs[S]
 
                     if event.key == pygame.K_RIGHT:
@@ -650,11 +652,12 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
 
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                """used for testing"""
+                
                 if event.button == 3: #the right click
+                    """used for testing
                     if pressing(GraphButtonPosition, graphbutton, pygame.mouse.get_pos()) and (GraphButtonColour ==  OnButtonColour):
                        SubGraph = mapobject.select_graph() 
-               # """ """                   
+                    """                    
 
                     if canpan: 
                         panning         = True
@@ -672,8 +675,13 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
                     InitialOffset        = [MapToScreenOffset[0], MapToScreenOffset[1]]
 
                 if event.button == 1: #the left click
+                    """used for testing"""
+                    print(pygame.mouse.get_pos())
+                    """ """
                     if selectinggraph:
+                        """used for testing
                         print('left click')
+                        """
                         return SubGraphs[S]
 
 
@@ -687,9 +695,9 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
                         elif not(ctrl):
                             mapobject.make_graph(True)
 
-                        """used for testing
+                        """used for testing"""
                         print("make_graph()")
-                        """
+                        """ """
                         """used for testing
                         print(mapobject.graph)
                         """
@@ -793,8 +801,8 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
                     if drawing == True:
                         drawing     = False
                         """used for testing"""
-                        #print(NewLine)
-                        """"""
+                        print(NewLine)
+                        """ """
                         if len(NewLine) > 1: #a single coordinate is not valid as a line
                             Lines.append(NewLine)
 
