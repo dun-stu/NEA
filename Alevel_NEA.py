@@ -293,10 +293,17 @@ class map_class:
 
         subgraph = self.select_graph()
         C,E = check_cycle(list(subgraph.values())[0][0], None, [list(subgraph.values())[0][0]], subgraph)
-        """E used for testing"""
+        del SubGraphs #don't want excess global variables
+        """E used for testing
         print(C)
         return E
-        """ """
+        """
+
+        global algorithmgraph
+        algorithmgraph = self.algorithm(subgraph)
+        display_mapping_editor(self.Lines,self.colour, False, False, False, True)
+        del algorithmgraph
+         
         
 
 def pressing(buttonposition, button, mouseposition):
@@ -304,7 +311,7 @@ def pressing(buttonposition, button, mouseposition):
    else: return False   
 
 
-def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, makinggraph = False, selectinggraph = False, selectingalgorithm = False): # to be changed to Map.colour when OOP is implimented + more parameters(like map, user)
+def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, makinggraph = False, selectinggraph = False, selectingalgorithm = False, displayingalorithm = False): # to be changed to Map.colour when OOP is implimented + more parameters(like map, user)
     #pygame.time.Clock().tick(100)
     if makinggraph:
         mgbutton = False #make graph button
@@ -313,7 +320,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
         candraw  = False
         pabutton = False #perform algorithm button
 
-    if selectingalgorithm or selectinggraph:
+    if selectingalgorithm or selectinggraph or displayingalorithm:
         mgbutton = False #make graph button
         canpan   = False
         canzoom  = False
@@ -472,6 +479,14 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
 
         except: pass
 
+        if displayingalorithm:
+            try:
+                for EachLine in SubGraphLines:
+                    pygame.draw.lines(map, (3, 123, 252) , False ,EachLine, width = 5)
+            except: 
+                SubGraphLines = #display subgraph method
+
+
         if selectinggraph:
             """
             try:
@@ -519,7 +534,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
 
             for EachNode in SubGraphs[S].keys():
                 pygame.draw.circle(map, (65, 250, 65), EachNode, 4) #to be changed
-                
+        """ used for testing        
         try:
             SubGraphLines = []
             for EachNode in list(SubGraph.keys()):
@@ -531,13 +546,15 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
                              if check_vertex((EachLine[c], EachLine[c+1]), EachNode):
                                  if EachLine not in SubGraphLines: SubGraphLines.append(EachLine)
 
-
+    
             for EachLine in SubGraphLines:
                  pygame.draw.lines(map, (245, 185, 66) , False ,EachLine, width = 5)
 
             for EachNode in SubGraph.keys():
                 pygame.draw.circle(map, (65, 250, 65), EachNode, 4) #to be changed
         except:pass
+        used for testing"""
+
          
         """ used for testing
         if isinstance(E, tuple): pygame.draw.circle(map, (245, 185, 66), E, 4) #to be changed
