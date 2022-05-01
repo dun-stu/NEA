@@ -369,7 +369,7 @@ class map_class:
         #choice to be made, for initial testing Kruscals is used
         algorithmgraph = self.kruscals(subgraph) #algorithm to be created
         print(algorithmgraph)
-        breakpoint()
+        #breakpoint()
         """ """
         global SubGraphLines
         SubGraphLines = self.get_algorithm_lines(subgraph, algorithmgraph)
@@ -1066,7 +1066,6 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
 
 """used for testing"""
 Lines = [ [[50,550], [100,600]], [[100,500], [100,600]], [[150,550], [100,600]], [[150,550], [200,500]], [[250,450], [200,500]], [[150,450], [200,500]], [[150,450], [200,400]], [[150,450], [50,400]], [[100,350], [50,400]], [[100,350], [50,300]], [[100,350], [150,300]], [[150,300],[100,250]], [[150,300],[200,250]], [[100,250],[150,200]] ]
-print(Lines)
 test_map = map_class(Lines)
 print(test_map.graph)
 test_map.make_graph()
