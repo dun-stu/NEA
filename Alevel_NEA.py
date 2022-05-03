@@ -182,8 +182,9 @@ class map_class:
                             print(EachVertex)
                             """ 
                             if check_vertex((EachLine[v1],EachNode), EachVertex):
-                                d = distance_between(EachVertex, EachNode)
-                                if round(d,1) != 0:   
+                                
+                                if round(d,1) != 0: 
+                                    d = distance_between(EachVertex, EachNode)
                                     nc = True
                                     self.graph[EachNode].append([EachVertex, round(d,2)])
                         
@@ -368,12 +369,19 @@ class map_class:
         """used for testing"""
         #choice to be made, for initial testing Kruscals is used
         algorithmgraph = self.kruscals(subgraph) #algorithm to be created
+        print('subgraph  ', end="")
+        print(subgraph)
+        print('algorithm graph   ', end="")
         print(algorithmgraph)
         #breakpoint()
         """ """
         global SubGraphLines
         SubGraphLines = self.get_algorithm_lines(subgraph, algorithmgraph)
-        display_mapping_editor(self.Lines,self.colour, False, False, False, True)
+        """used for testing"""
+        print(SubGraphLines)
+        breakpoint()
+        """ """
+        display_mapping_editor(self.Lines, self.colour, False, False, False, False, True)
         del SubGraphLines
 
     def get_algorithm_lines(self, subgraph, algorithmgraph):
@@ -411,8 +419,9 @@ class map_class:
                                     print('EachVertex = ' ,end = "")
                                     print(EachVertex)
                                     """
-                                    d += distance_between(EachLine[v2],EachVertex)
+                                    
                                     if round(d,1) != 0:
+                                        d += distance_between(EachLine[v2],EachVertex)
                                         nc = True
 
                                         for EachValue in algorithmgraph[EachKey]:
@@ -421,6 +430,8 @@ class map_class:
                                                 AlgorithmGraphLines.append(Line)
 
                                                 break
+                                    else: d += distance_between(EachLine[v2],EachLine[v2 + 1])
+
 
                             else: 
                                 d += distance_between(EachLine[v2],EachLine[v2 + 1])
@@ -457,9 +468,9 @@ class map_class:
                                     print('EachVertex = ' ,end = "")
                                     print(EachVertex)
                                     """
-                                    d += distance_between(EachLine[v2],EachVertex)
+                                    
                                     if round(d,1) != 0:
-                                        
+                                        d += distance_between(EachLine[v2],EachVertex)
                                         nc = True
                                         for EachValue in algorithmgraph[EachKey]:
                                             if [EachVertex, round(d,2)] == EachValue:  
@@ -467,6 +478,7 @@ class map_class:
                                                 AlgorithmGraphLines.append(Line)
 
                                             break
+                                    else: d += distance_between(EachLine[v2],EachLine[v2 - 1])
 
                             else: 
                                 
@@ -651,7 +663,8 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
         except: pass
 
         if displayingalorithm:
-            for EachLine in SubGraphLines:
+            
+            for EachLine in globals()['SubGraphLines']:
                 pygame.draw.lines(map, (3, 123, 252) , False ,EachLine, width = 5)
 
 
@@ -1065,11 +1078,12 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
 #print(a)
 
 """used for testing"""
-Lines = [ [[50,550], [100,600]], [[100,500], [100,600]], [[150,550], [100,600]], [[150,550], [200,500]], [[250,450], [200,500]], [[150,450], [200,500]], [[150,450], [200,400]], [[150,450], [50,400]], [[100,350], [50,400]], [[100,350], [50,300]], [[100,350], [150,300]], [[150,300],[100,250]], [[150,300],[200,250]], [[100,250],[150,200]] ]
-test_map = map_class(Lines)
-print(test_map.graph)
-test_map.make_graph()
-print(test_map.graph)
+Lines = [ [[50,550], [100,600]], [[100,500], [100,600]], [[150,550], [100,600]], [[150,550], [200,500]], [[250,450], [200,500]], [[150,450], [200,500]], [[150,450], [200,400]], [[150,450], [50,400]], [[100,350], [50,400]], [[100,350], [50,300]], [[100,350], [150,300]], [[150,300],[100,250]], [[150,300],[200,250]], [[100,250],[150,200]], [[200,250],[150,200]]
+        ,[ [486,204], [525,210], [650,200], [875,220], [995,215], [1117, 290]	], [	[624,99], [650,140], [750,150], [820,130], [870,150], [910, 260], [910, 265], [900,295], [850,320], [800,330], [760,345], [700, 335], [650,310], [600,280], [570,230], [580,80], [600, 50], [660,50], [750,55], [830,98], [850,150], [845,195] 	]	]
+#test_map = map_class(Lines)
+#print(test_map.graph)
+#test_map.make_graph()
+#print(test_map.graph)
 display_mapping_editor(Lines)
 """ """
 
