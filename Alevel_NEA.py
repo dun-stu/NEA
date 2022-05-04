@@ -1,6 +1,7 @@
 
 import pygame, sys
 import math
+import random
 import time
 pygame.init()
 def check_cycle(StartNode, NodeFrom, List, D):
@@ -317,6 +318,7 @@ class map_class:
         MST = {}
         Edges.sort(key=lambda x: x.distance, reverse=False) #sorts Edges by distances
         edges = 0
+        MST.update({Edges[random.randint(0,(len(Edges) - 1))].node1: ''}) #choose a random start node
         while (edges < (len(subgraph.keys()) - 1)): #while num of edges < num of nodes - 1
             for EachEdge in Edges:
                 if (EachEdge.node1 in MST.keys()) ^ (EachEdge.node2 in MST.keys()): #XOR, so the smallest Edge, which conects and unvisited node(not in MST) to the MST is added
@@ -326,6 +328,13 @@ class map_class:
 
                     try:    MST[EachEdge.node2].append([EachEdge.node1, EachEdge.distance]) 
                     except: MST.update({EachEdge.node2: [[EachEdge.node1, EachEdge.distance]]})  
+                    edges += 1
+                    """used for testing"""
+                    global SubGraphLines
+                    SubGraphLines = self.get_algorithm_lines(subgraph, MST)
+                    display_mapping_editor(self.Lines, self.colour, False, False, False, False, True) #so the additions are made incrementally on the screen
+                    """ """
+                    break
         return MST
 
     def kruscals(self, subgraph):
@@ -371,7 +380,13 @@ class map_class:
                 MST[Edges[edgenumber].node2].pop()
                 if len(MST[Edges[edgenumber].node1]) == 0: del MST[Edges[edgenumber].node1]
                 if len(MST[Edges[edgenumber].node2]) == 0: del MST[Edges[edgenumber].node2]
-            else: edges += 1
+            else: 
+                edges += 1
+                """used for testing"""
+                global SubGraphLines
+                SubGraphLines = self.get_algorithm_lines(subgraph, MST)
+                display_mapping_editor(self.Lines, self.colour, False, False, False, False, True)
+                """ """
             edgenumber += 1
         return MST
 
@@ -395,7 +410,7 @@ class map_class:
         """
         """used for testing"""
         #choice to be made, for initial testing Kruscals is used
-        algorithmgraph = self.Prims(subgraph) #algorithm to be created
+        algorithmgraph = self.kruscals(subgraph) #algorithm to be created
         print('subgraph  ', end="")
         print(subgraph)
         print('algorithm graph   ', end="")
@@ -549,8 +564,16 @@ def pressing(buttonposition, button, mouseposition):
    else: return False   
 
 
-def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, makinggraph = False, selectinggraph = False, selectingalgorithm = False, displayingalorithm = False): # to be changed to Map.colour when OOP is implimented + more parameters(like map, user)
+def display_mapping_editor(Lines = [], colour = (192,192,192), 
+                           editing = True, makinggraph = False, 
+                           selectinggraph = False, selectingalgorithm = False, 
+                           displayingalorithm = False): 
+
+    #Editor is a function with different modes
+    
     #pygame.time.Clock().tick(100)
+
+    #Varying functionality allowed depending on the mode
     if makinggraph:
         mgbutton = False #make graph button
         canpan   = True
@@ -572,20 +595,30 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
         candraw  = True
         pabutton = True
 
-  #  colour = Map.colour #to be implimented
     screen  = pygame.display.set_mode((1536,800))
+    #Permenant screen elements created
+
+    optionsbar  = pygame.Surface((1536,100))    
+    optionsbar.fill(colour)
+    #Options bar with text
+    optionstext = (pygame.font.SysFont('arial', 52)).render('OPTIONS', True, (0,0,0))
+
+    MapSize = (1536, 700)
+    map     = pygame.Surface(MapSize)
+    map.fill((255,255,255))   # map only colour option is white, as this is clearest to draw on
+    #the surface to draw on
+
+    mapbox  = pygame.transform.scale(map, [192, 88])
+    MapBoxPosition        = (1100,6)
+    #A small image showing the whole drawing surface for positional awareness during panning/zooming
+
+    #button information
     OffButtonTextColour = (54, 50, 50)
     OffButtonColour     = (227, 220, 220)
     OnButtonTextColour  = (0, 0, 0)
     OnButtonColour      = (255, 255, 255)
-    optionsbar  = pygame.Surface((1536,100))
-    optionsbar.fill(colour)
-    optionstext = (pygame.font.SysFont('arial', 52)).render('OPTIONS', True, (0,0,0))
-    MapSize = (1536, 700)
-    map     = pygame.Surface(MapSize)
-    map.fill((255,255,255))          # map only colour option is white, as this is clearest to draw on
-    mapbox  = pygame.transform.scale(map, [192, 88])
-    MapBoxPosition        = (1100,6)
+
+    #defaults for the buttons
     GraphButtonTextColour = OffButtonTextColour
     GraphButtonColour     = OffButtonColour
     GraphButtonPosition   = (550,10)
@@ -914,29 +947,28 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
                     ctrl = True 
 
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN: #if click   ①
                 
-                if event.button == 3: #the right click
-                    """used for testing
-                    if pressing(GraphButtonPosition, graphbutton, pygame.mouse.get_pos()) and (GraphButtonColour ==  OnButtonColour):
-                       SubGraph = mapobject.select_graph() 
-                    """                    
-
-                    if canpan: 
-                        panning         = True
-                        InitialMousePos = pygame.mouse.get_pos()
-                        InitialOffset   = [MapToScreenOffset[0], MapToScreenOffset[1]]
-
-
-                if (event.button == 4) or (event.button == 5) and (zooming == False) and canzoom: #the mouse scroll
+                if (event.button == 4) or (event.button == 5) and (zooming == False) and canzoom: #the mouse scroll ①
+                    """used for testing"""
                     print('zoomed from: ', end = "")
                     print(pygame.mouse.get_pos())
+                    """ """
                     initialzoom = zoom
                     zooming     = True
 
-                    MouseToSurfaceOffset = [(pygame.mouse.get_pos()[0] - MapToScreenOffset[0]) , (pygame.mouse.get_pos()[1] - MapToScreenOffset[1])]
+                    MouseToSurfaceOffset = [(pygame.mouse.get_pos()[0] - MapToScreenOffset[0]) , (pygame.mouse.get_pos()[1] - MapToScreenOffset[1])] ②
                     InitialOffset        = [MapToScreenOffset[0], MapToScreenOffset[1]]
 
+                if event.button == 3: #the right click            
+
+                    if canpan: #if panning is allowed in the mode running
+                        panning         = True
+                        InitialMousePos = pygame.mouse.get_pos() #Get the mouses screen position 
+                        InitialOffset   = [MapToScreenOffset[0], MapToScreenOffset[1]] #Initial mouse to screen offset ③
+
+
+                
                 if event.button == 1: #the left click
                     """used for testing
                     print(pygame.mouse.get_pos())
@@ -1048,9 +1080,9 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
                     ctrl = False           
 
 
-            if event.type == pygame.MOUSEBUTTONUP:
+            if event.type == pygame.MOUSEBUTTONUP: #if click released
 
-                if  event.button == 3:
+                if  event.button == 3: #right click     ⑦
                     """used for testing
                     P[1] += MouseOffset[1]
                     print('Overall mouse offseting: ' + str(P)) #for testing 
@@ -1076,7 +1108,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
 
         if panning:
             MouseOffset = [pygame.mouse.get_pos()[0] - InitialMousePos[0], pygame.mouse.get_pos()[1] - InitialMousePos[1]] #how much have panned
-            
+                                      #④             #⑤                                #④             #⑤
             """ used for testing
             if (MouseOffset[0]) != K:
                 K = MouseOffset
@@ -1084,14 +1116,14 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
             """
 
             if ((InitialOffset[0] + MouseOffset[0]) <= 0) and ((InitialOffset[0] + MouseOffset[0]) + round(MapSize[0] * zoom) >= 1536): #contraints
-                MapToScreenOffset[0] = InitialOffset[0] + MouseOffset[0] #surface compared to screen #horizontal panning
+                MapToScreenOffset[0] = InitialOffset[0] + MouseOffset[0] #surface compared to screen #horizontal panning ⑥
             """ used for testing
             else: 
                 print('contraints breached')
             """
 
             if ((InitialOffset[1] + MouseOffset[1]) <= 100) and ((InitialOffset[1] + MouseOffset[1]) + round(MapSize[1] * zoom) >= 800): #constraints
-                MapToScreenOffset[1] = InitialOffset[1] + MouseOffset[1] #vertical panning
+                MapToScreenOffset[1] = InitialOffset[1] + MouseOffset[1] #vertical panning ⑥
             """ used for testing
             else: 
                 print('contraints breached')
@@ -1132,7 +1164,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
 #a = check_vertex([[80,40],[100,20]],[[50,30],[130,50]])
 #print(a)
 
-"""used for testing"""
+"""used for testing
 Lines = [ [[50,550], [100,600]], [[100,500], [100,600]], [[150,550], [100,600]], [[150,550], [200,500]], [[250,450], [200,500]], [[150,450], [200,500]], [[150,450], [200,400]], [[150,450], [50,400]], [[100,350], [50,400]], [[100,350], [50,300]], [[100,350], [150,300]], [[150,300],[100,250]], [[150,300],[200,250]], [[100,250],[150,200]], [[200,250],[150,200]]
         ,[ [486,204], [525,210], [650,200], [875,220], [995,215], [1117, 290]	], [	[624,99], [650,140], [750,150], [820,130], [870,150], [910, 260], [910, 265], [900,295], [850,320], [800,330], [760,345], [700, 335], [650,310], [600,280], [570,230], [580,80], [600, 50], [660,50], [750,15], [830,98], [850,150], [845,195] 	]	]
 #test_map = map_class(Lines)
@@ -1140,9 +1172,9 @@ Lines = [ [[50,550], [100,600]], [[100,500], [100,600]], [[150,550], [100,600]],
 #test_map.make_graph()
 #print(test_map.graph)
 display_mapping_editor(Lines)
-""" """
+""" 
 
 
 colour = (192,192,192)
 
-#display_mapping_editor(Lines)
+display_mapping_editor()
