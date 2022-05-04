@@ -185,7 +185,7 @@ class map_class:
                                 d = distance_between(EachVertex, EachNode)
                                 if round(d,1) != 0:   
                                     nc = True
-                                    self.graph[EachNode].append([EachVertex, round(d,8)])
+                                    self.graph[EachNode].append([EachVertex, round(d,6)])
                         
                         #"""
                         d = distance_between(EachLine[v1], EachNode)
@@ -198,7 +198,7 @@ class map_class:
                                 if check_vertex((EachLine[v2],EachLine[v2 - 1]),EachVertex):
                                     d += distance_between(EachLine[v2],EachVertex)
                                     if round(d,1) != 0: #if the 
-                                        self.graph[EachNode].append([EachVertex,round(d,8)])
+                                        self.graph[EachNode].append([EachVertex,round(d,6)])
                                         nc = True
                                         break  
 
@@ -212,7 +212,7 @@ class map_class:
                                 d = distance_between(EachVertex, EachNode)
                                 if round(d,1) != 0:
                                     nc = True
-                                    self.graph[EachNode].append([EachVertex, round(d,8)])
+                                    self.graph[EachNode].append([EachVertex, round(d,6)])
                         #"""
                         d = distance_between(EachLine[v1+1], EachNode)
                         for v2 in range((v1+1), (len(EachLine)-1)):
@@ -230,7 +230,7 @@ class map_class:
                                     """ 
                                     d += distance_between(EachLine[v2],EachVertex)
                                     if round(d,1) != 0:
-                                        self.graph[EachNode].append([EachVertex,round(d,8)])
+                                        self.graph[EachNode].append([EachVertex,round(d,6)])
                                         nc = True
                                         break
 
@@ -264,7 +264,7 @@ class map_class:
         InitKeys = {key: self.graph[key] for key in self.graph.keys()}
 
         for EachKey in InitKeys: #rounding all the nodes
-            self.graph[(round(EachKey[0], 8), round(EachKey[1], 8))] = self.graph.pop(EachKey)
+            self.graph[(round(EachKey[0], 6), round(EachKey[1], 6))] = self.graph.pop(EachKey)
         
         del InitKeys
 
@@ -273,7 +273,7 @@ class map_class:
             print(self.graph[EachValue])
             """
             for ec in range(0, len(self.graph[EachValue])):
-                self.graph[EachValue][ec][0] = (round(self.graph[EachValue][ec][0][0], 8), round(self.graph[EachValue][ec][0][1], 8) )
+                self.graph[EachValue][ec][0] = (round(self.graph[EachValue][ec][0][0], 6), round(self.graph[EachValue][ec][0][1], 6) )
 
 
 
@@ -299,6 +299,34 @@ class map_class:
             SubGraphs.append(subgraph)
 
         return display_mapping_editor(self.Lines,self.colour, False, False, True)
+
+    def Prims(self, subgraph):
+        Edges = []
+        for EachKey in subgraph.keys():
+            for EachValue in subgraph[EachKey]:
+                Edges.append(edge(EachKey, EachValue))
+
+        for EachEdge1 in Edges: #loop through all the edges
+            n2 = 0
+            for EachEdge2 in Edges:
+                if ((EachEdge1.node1 == EachEdge2.node2) and
+                    (EachEdge1.node2 == EachEdge2.node1) and
+                    (EachEdge1.distance == EachEdge2.distance)): #if it is a duplicate, just with the nodes switched
+                    Edges.remove(EachEdge2) #delete one of the duplicates
+                    break
+        MST = {}
+        Edges.sort(key=lambda x: x.distance, reverse=False) #sorts Edges by distances
+        edges = 0
+        while (edges < (len(subgraph.keys()) - 1)): #while num of edges < num of nodes - 1
+            for EachEdge in Edges:
+                if (EachEdge.node1 in MST.keys()) ^ (EachEdge.node2 in MST.keys()): #XOR, so the smallest Edge, which conects and unvisited node(not in MST) to the MST is added
+                    #adding the edges to the minimum spanning tree (as a dictionary)
+                    try:    MST[EachEdge.node1].append([EachEdge.node2, EachEdge.distance])     #if the node has been added already  
+                    except: MST.update({EachEdge.node1: [[EachEdge.node2, EachEdge.distance]]}) #if the node is not part of the spanning tree yet
+
+                    try:    MST[EachEdge.node2].append([EachEdge.node1, EachEdge.distance]) 
+                    except: MST.update({EachEdge.node2: [[EachEdge.node1, EachEdge.distance]]})  
+        return MST
 
     def kruscals(self, subgraph):
         Edges = []
@@ -367,7 +395,7 @@ class map_class:
         """
         """used for testing"""
         #choice to be made, for initial testing Kruscals is used
-        algorithmgraph = self.kruscals(subgraph) #algorithm to be created
+        algorithmgraph = self.Prims(subgraph) #algorithm to be created
         print('subgraph  ', end="")
         print(subgraph)
         print('algorithm graph   ', end="")
@@ -404,43 +432,56 @@ class map_class:
                                         if round(d,1) != 0:
                                             nc = True
                                             for EachValue in algorithmgraph[EachKey]:
-                                                if [EachVertex, round(d,8)] == EachValue:  
+                                                EachValue[1] = round(EachValue[1], 2)
+                                                if [EachVertex, round(d,2)] == EachValue:  
                                                     Line.append(EachVertex)
                                                     AlgorithmGraphLines.append(Line)
                                                     break
                         #"""
                         d = distance_between(EachLine[v1 + 1], EachKey)
+                        """used for testing"""
+                        print('EachLine:  ', end ="")
+                        print(EachLine)
+                        """ """
                         for v2 in range((v1+1), (len(EachLine)-1)):
                             if nc == True: break
                             Line.append(EachLine[v2])
+
                             for EachVertex in subgraph.keys():
                                 if nc == True: break
                                 if check_vertex((EachLine[v2],EachLine[v2 + 1]),EachVertex):
-                                    """used for testing
+                                    """used for testing"""
                                     print('tuple(EachLine[v2]) = ', end = "")
                                     print(tuple(EachLine[v2]))
                                     print('tuple(EachLine[v2 + 1]) = ', end = "")
                                     print(tuple(EachLine[v2 + 1]))
                                     print('EachVertex = ' ,end = "")
                                     print(EachVertex)
-                                    """
+                                    """ """
                                     d += distance_between(EachLine[v2],EachVertex)
                                     if round(d,1) != 0:
                                         nc = True
 
                                         for EachValue in algorithmgraph[EachKey]:
-                                            if [EachVertex, round(d,8)] == EachValue:  
+                                            """used for testing"""
+                                            print('[EachVertex, round(d,6)]:    ', end="")
+                                            print([EachVertex, round(d,6)])
+                                            print('EachValue:    ', end="")
+                                            print(EachValue)
+                                            """ """
+                                            EachValue[1] = round(EachValue[1], 2)
+                                            if [EachVertex, round(d,2)] == EachValue:  
                                                 Line.append(EachVertex)
                                                 AlgorithmGraphLines.append(Line)
 
                                                 break
-
+                            
                             else: 
                                 d += distance_between(EachLine[v2],EachLine[v2 + 1])
                                 """used for testing
                                 print(d)
                                 """
-
+                        #breakpoint()
                         nc = False
                         Line = []
                         Line.append(EachKey)
@@ -450,7 +491,8 @@ class map_class:
                                         if round(d,1) != 0:
                                             nc = True
                                             for EachValue in algorithmgraph[EachKey]:
-                                                if [EachVertex, round(d,8)] == EachValue:  
+                                                EachValue[1] = round(EachValue[1], 2)
+                                                if [EachVertex, round(d,2)] == EachValue:  
                                                     Line.append(EachVertex)
                                                     AlgorithmGraphLines.append(Line)
                         #"""
@@ -462,31 +504,43 @@ class map_class:
                             for EachVertex in subgraph.keys():
                                 if nc == True: break
                                 if check_vertex((EachLine[v2],EachLine[v2 - 1]),EachVertex):
-                                    """used for testing
+                                    """used for testing"""
                                     print('tuple(EachLine[v2]) = ', end = "")
                                     print(tuple(EachLine[v2]))
-                                    print('tuple(EachLine[v2 + 1]) = ', end = "")
-                                    print(tuple(EachLine[v2 + 1]))
+                                    print('tuple(EachLine[v2 - 1]) = ', end = "")
+                                    print(tuple(EachLine[v2 - 1]))
                                     print('EachVertex = ' ,end = "")
                                     print(EachVertex)
-                                    """
+                                    """ """
                                     d += distance_between(EachLine[v2],EachVertex)
                                     if round(d,1) != 0:
                                         
                                         nc = True
                                         for EachValue in algorithmgraph[EachKey]:
-                                            if [EachVertex, round(d,)] == EachValue:  
+                                            """used for testing"""
+                                            print('[EachVertex, round(d,6)]:    ', end="")
+                                            print([EachVertex, round(d,6)])
+                                            print('EachValue:    ', end="")
+                                            print(EachValue)
+                                            """ """
+                                            EachValue[1] = round(EachValue[1], 2)
+                                            if [EachVertex, round(d,2)] == EachValue:  
                                                 Line.append(EachVertex)
                                                 AlgorithmGraphLines.append(Line)
-
-                                            break
+                                                """used for testing"""
+                                                print('[EachVertex, round(d,6)]:    ', end="")
+                                                print([EachVertex, round(d,6)])
+                                                """ """
+                                                break
 
                             else: 
                                 
                                 d += distance_between(EachLine[v2],EachLine[v2 - 1])
                                 """used for testing
                                 print(d)
-                                """        
+                                """  
+                        #breakpoint()
+                        
         return AlgorithmGraphLines 
         
 
@@ -1085,7 +1139,6 @@ Lines = [ [[50,550], [100,600]], [[100,500], [100,600]], [[150,550], [100,600]],
 #print(test_map.graph)
 #test_map.make_graph()
 #print(test_map.graph)
-print(check_vertex(([820,130], [870,150]), [846.36, 140.55] ))
 display_mapping_editor(Lines)
 """ """
 

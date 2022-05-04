@@ -1,11 +1,15 @@
 import pygame, sys
 import time
 import schedule
+print(False ^ True)
+
+
+"""
 T = ['1','2']
 for x in range(0,len(T)-1):
     print(x)
 
-"""
+
 
 L = {1: ['x','y','z'], 
      2: [] ,
