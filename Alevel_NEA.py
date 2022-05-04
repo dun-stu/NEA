@@ -22,7 +22,7 @@ def check_cycle(StartNode, NodeFrom, List, D):
 
     return False
 
-def check_vertex(CoordinateSet1, CoordinateSet2): #to check if the lines between two sets of coordinates intersect
+def check_vertex(CoordinateSet1, CoordinateSet2, Version = 1): #to check if the lines between two sets of coordinates intersect
   
     x1_1 = CoordinateSet1[0][0]
     x1_2 = CoordinateSet1[1][0]
@@ -78,16 +78,16 @@ def check_vertex(CoordinateSet1, CoordinateSet2): #to check if the lines between
             except ZeroDivisionError:
                 m2 = math.inf
 
-            if (round(m1, 8) == round(m2, 8)) or (CoordinateSet2 == tuple(CoordinateSet1[0])) or (CoordinateSet2 == tuple(CoordinateSet1[1])):
+            if (round(m1, 4) == round(m2, 4)) or (CoordinateSet2 == tuple(CoordinateSet1[0])) or (CoordinateSet2 == tuple(CoordinateSet1[1])): #dodgy 
                 return True
 
-                """used for testing
+                """used for testing"""
             elif (m1 != m2):
                 print('m1 = ', end = "")
                 print(m1)
                 print('m2 = ', end = "")
                 print(m2)
-                """
+                """ """
             """used for testing
         else:
             print('(third) coordinate outside coordinate ranges')
@@ -182,11 +182,10 @@ class map_class:
                             print(EachVertex)
                             """ 
                             if check_vertex((EachLine[v1],EachNode), EachVertex):
-                                
-                                if round(d,1) != 0: 
-                                    d = distance_between(EachVertex, EachNode)
+                                d = distance_between(EachVertex, EachNode)
+                                if round(d,1) != 0:   
                                     nc = True
-                                    self.graph[EachNode].append([EachVertex, round(d,2)])
+                                    self.graph[EachNode].append([EachVertex, round(d,8)])
                         
                         #"""
                         d = distance_between(EachLine[v1], EachNode)
@@ -199,7 +198,7 @@ class map_class:
                                 if check_vertex((EachLine[v2],EachLine[v2 - 1]),EachVertex):
                                     d += distance_between(EachLine[v2],EachVertex)
                                     if round(d,1) != 0: #if the 
-                                        self.graph[EachNode].append([EachVertex,round(d,2)])
+                                        self.graph[EachNode].append([EachVertex,round(d,8)])
                                         nc = True
                                         break  
 
@@ -213,7 +212,7 @@ class map_class:
                                 d = distance_between(EachVertex, EachNode)
                                 if round(d,1) != 0:
                                     nc = True
-                                    self.graph[EachNode].append([EachVertex, round(d,2)])
+                                    self.graph[EachNode].append([EachVertex, round(d,8)])
                         #"""
                         d = distance_between(EachLine[v1+1], EachNode)
                         for v2 in range((v1+1), (len(EachLine)-1)):
@@ -231,7 +230,7 @@ class map_class:
                                     """ 
                                     d += distance_between(EachLine[v2],EachVertex)
                                     if round(d,1) != 0:
-                                        self.graph[EachNode].append([EachVertex,round(d,2)])
+                                        self.graph[EachNode].append([EachVertex,round(d,8)])
                                         nc = True
                                         break
 
@@ -265,7 +264,7 @@ class map_class:
         InitKeys = {key: self.graph[key] for key in self.graph.keys()}
 
         for EachKey in InitKeys: #rounding all the nodes
-            self.graph[(round(EachKey[0], 2), round(EachKey[1], 2))] = self.graph.pop(EachKey)
+            self.graph[(round(EachKey[0], 8), round(EachKey[1], 8))] = self.graph.pop(EachKey)
         
         del InitKeys
 
@@ -274,7 +273,7 @@ class map_class:
             print(self.graph[EachValue])
             """
             for ec in range(0, len(self.graph[EachValue])):
-                self.graph[EachValue][ec][0] = (round(self.graph[EachValue][ec][0][0], 2), round(self.graph[EachValue][ec][0][1], 2) )
+                self.graph[EachValue][ec][0] = (round(self.graph[EachValue][ec][0][0], 8), round(self.graph[EachValue][ec][0][1], 8) )
 
 
 
@@ -377,19 +376,25 @@ class map_class:
         """ """
         global SubGraphLines
         SubGraphLines = self.get_algorithm_lines(subgraph, algorithmgraph)
-        """used for testing"""
+        """used for testing
         print(SubGraphLines)
         breakpoint()
-        """ """
+        """ 
         display_mapping_editor(self.Lines, self.colour, False, False, False, False, True)
         del SubGraphLines
 
     def get_algorithm_lines(self, subgraph, algorithmgraph):
         AlgorithmGraphLines = []
         for EachKey in algorithmgraph.keys(): 
+
             for EachLine in self.Lines: #possibly add Subgraphlines instead
                 for v1 in range(0, (len(EachLine)-1)):
                    if check_vertex((EachLine[v1],  EachLine[v1 + 1]), EachKey):
+                        """used for testing"""
+                        print('EachKey:      ', end="")
+                        print(EachKey)
+
+                        """ """
                         nc = False
                         Line = []
                         Line.append(EachKey)
@@ -399,7 +404,7 @@ class map_class:
                                         if round(d,1) != 0:
                                             nc = True
                                             for EachValue in algorithmgraph[EachKey]:
-                                                if [EachVertex, round(d,2)] == EachValue:  
+                                                if [EachVertex, round(d,8)] == EachValue:  
                                                     Line.append(EachVertex)
                                                     AlgorithmGraphLines.append(Line)
                                                     break
@@ -419,19 +424,16 @@ class map_class:
                                     print('EachVertex = ' ,end = "")
                                     print(EachVertex)
                                     """
-                                    
+                                    d += distance_between(EachLine[v2],EachVertex)
                                     if round(d,1) != 0:
-                                        d += distance_between(EachLine[v2],EachVertex)
                                         nc = True
 
                                         for EachValue in algorithmgraph[EachKey]:
-                                            if [EachVertex, round(d,2)] == EachValue:  
+                                            if [EachVertex, round(d,8)] == EachValue:  
                                                 Line.append(EachVertex)
                                                 AlgorithmGraphLines.append(Line)
 
                                                 break
-                                    else: d += distance_between(EachLine[v2],EachLine[v2 + 1])
-
 
                             else: 
                                 d += distance_between(EachLine[v2],EachLine[v2 + 1])
@@ -448,7 +450,7 @@ class map_class:
                                         if round(d,1) != 0:
                                             nc = True
                                             for EachValue in algorithmgraph[EachKey]:
-                                                if [EachVertex, round(d,2)] == EachValue:  
+                                                if [EachVertex, round(d,8)] == EachValue:  
                                                     Line.append(EachVertex)
                                                     AlgorithmGraphLines.append(Line)
                         #"""
@@ -468,17 +470,16 @@ class map_class:
                                     print('EachVertex = ' ,end = "")
                                     print(EachVertex)
                                     """
-                                    
+                                    d += distance_between(EachLine[v2],EachVertex)
                                     if round(d,1) != 0:
-                                        d += distance_between(EachLine[v2],EachVertex)
+                                        
                                         nc = True
                                         for EachValue in algorithmgraph[EachKey]:
-                                            if [EachVertex, round(d,2)] == EachValue:  
+                                            if [EachVertex, round(d,)] == EachValue:  
                                                 Line.append(EachVertex)
                                                 AlgorithmGraphLines.append(Line)
 
                                             break
-                                    else: d += distance_between(EachLine[v2],EachLine[v2 - 1])
 
                             else: 
                                 
@@ -1079,11 +1080,12 @@ def display_mapping_editor(Lines = [], colour = (192,192,192), editing = True, m
 
 """used for testing"""
 Lines = [ [[50,550], [100,600]], [[100,500], [100,600]], [[150,550], [100,600]], [[150,550], [200,500]], [[250,450], [200,500]], [[150,450], [200,500]], [[150,450], [200,400]], [[150,450], [50,400]], [[100,350], [50,400]], [[100,350], [50,300]], [[100,350], [150,300]], [[150,300],[100,250]], [[150,300],[200,250]], [[100,250],[150,200]], [[200,250],[150,200]]
-        ,[ [486,204], [525,210], [650,200], [875,220], [995,215], [1117, 290]	], [	[624,99], [650,140], [750,150], [820,130], [870,150], [910, 260], [910, 265], [900,295], [850,320], [800,330], [760,345], [700, 335], [650,310], [600,280], [570,230], [580,80], [600, 50], [660,50], [750,55], [830,98], [850,150], [845,195] 	]	]
+        ,[ [486,204], [525,210], [650,200], [875,220], [995,215], [1117, 290]	], [	[624,99], [650,140], [750,150], [820,130], [870,150], [910, 260], [910, 265], [900,295], [850,320], [800,330], [760,345], [700, 335], [650,310], [600,280], [570,230], [580,80], [600, 50], [660,50], [750,15], [830,98], [850,150], [845,195] 	]	]
 #test_map = map_class(Lines)
 #print(test_map.graph)
 #test_map.make_graph()
 #print(test_map.graph)
+print(check_vertex(([820,130], [870,150]), [846.36, 140.55] ))
 display_mapping_editor(Lines)
 """ """
 
