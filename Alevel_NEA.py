@@ -957,7 +957,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
                     initialzoom = zoom
                     zooming     = True
 
-                    MouseToSurfaceOffset = [(pygame.mouse.get_pos()[0] - MapToScreenOffset[0]) , (pygame.mouse.get_pos()[1] - MapToScreenOffset[1])] ②
+                    MouseToSurfaceOffset = [(pygame.mouse.get_pos()[0] - MapToScreenOffset[0]) , (pygame.mouse.get_pos()[1] - MapToScreenOffset[1])] #②
                     InitialOffset        = [MapToScreenOffset[0], MapToScreenOffset[1]]
 
                 if event.button == 3: #the right click            
@@ -1164,7 +1164,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
 #a = check_vertex([[80,40],[100,20]],[[50,30],[130,50]])
 #print(a)
 
-"""used for testing
+"""used for testing"""
 Lines = [ [[50,550], [100,600]], [[100,500], [100,600]], [[150,550], [100,600]], [[150,550], [200,500]], [[250,450], [200,500]], [[150,450], [200,500]], [[150,450], [200,400]], [[150,450], [50,400]], [[100,350], [50,400]], [[100,350], [50,300]], [[100,350], [150,300]], [[150,300],[100,250]], [[150,300],[200,250]], [[100,250],[150,200]], [[200,250],[150,200]]
         ,[ [486,204], [525,210], [650,200], [875,220], [995,215], [1117, 290]	], [	[624,99], [650,140], [750,150], [820,130], [870,150], [910, 260], [910, 265], [900,295], [850,320], [800,330], [760,345], [700, 335], [650,310], [600,280], [570,230], [580,80], [600, 50], [660,50], [750,15], [830,98], [850,150], [845,195] 	]	]
 #test_map = map_class(Lines)
@@ -1172,9 +1172,9 @@ Lines = [ [[50,550], [100,600]], [[100,500], [100,600]], [[150,550], [100,600]],
 #test_map.make_graph()
 #print(test_map.graph)
 display_mapping_editor(Lines)
-""" 
+""" """
 
 
 colour = (192,192,192)
 
-display_mapping_editor()
+#display_mapping_editor()
