@@ -82,13 +82,13 @@ def check_vertex(CoordinateSet1, CoordinateSet2, Version = 1): #to check if the 
             if (round(m1, 4) == round(m2, 4)) or (CoordinateSet2 == tuple(CoordinateSet1[0])) or (CoordinateSet2 == tuple(CoordinateSet1[1])): #dodgy 
                 return True
 
-                """used for testing"""
+                """used for testing
             elif (m1 != m2):
                 print('m1 = ', end = "")
                 print(m1)
                 print('m2 = ', end = "")
                 print(m2)
-                """ """
+                """ 
             """used for testing
         else:
             print('(third) coordinate outside coordinate ranges')
@@ -276,7 +276,12 @@ class map_class:
             for ec in range(0, len(self.graph[EachValue])):
                 self.graph[EachValue][ec][0] = (round(self.graph[EachValue][ec][0][0], 6), round(self.graph[EachValue][ec][0][1], 6) )
 
-
+    def select_node(self, subgraph):
+        global SubGraphLines
+        SubGraphLines = self.get_algorithm_lines(subgraph, subgraph)
+        Node = display_mapping_editor(self.Lines, self.colour, False, False, False, False, False, True)
+        del SubGraphLines
+        return Node
 
     def select_graph(self):
         global SubGraphs
@@ -408,7 +413,7 @@ class map_class:
 
         etc
         """
-        """used for testing"""
+        """used for testing
         #choice to be made, for initial testing Kruscals is used
         algorithmgraph = self.kruscals(subgraph) #algorithm to be created
         print('subgraph  ', end="")
@@ -416,9 +421,25 @@ class map_class:
         print('algorithm graph   ', end="")
         print(algorithmgraph)
         #breakpoint()
+        """ 
+
+        """used for testing"""
+        Node = self.select_node(subgraph)
         """ """
+        """used for testing"""
         global SubGraphLines
-        SubGraphLines = self.get_algorithm_lines(subgraph, algorithmgraph)
+        SubGraphLines = self.get_algorithm_lines(subgraph, subgraph)
+        subgraph = map_class(SubGraphLines)
+        subgraph.Nodes.append(tuple(Node))
+        subgraph.make_graph()
+        subgraph = subgraph.graph
+        SubGraphLines = self.get_algorithm_lines(subgraph, subgraph)
+        """ """
+
+        
+
+        #global SubGraphLines
+        #SubGraphLines = self.get_algorithm_lines(subgraph, algorithmgraph)
         """used for testing
         print(SubGraphLines)
         breakpoint()
@@ -454,10 +475,10 @@ class map_class:
                                                     break
                         #"""
                         d = distance_between(EachLine[v1 + 1], EachKey)
-                        """used for testing"""
+                        """used for testing
                         print('EachLine:  ', end ="")
                         print(EachLine)
-                        """ """
+                        """ 
                         for v2 in range((v1+1), (len(EachLine)-1)):
                             if nc == True: break
                             Line.append(EachLine[v2])
@@ -465,25 +486,25 @@ class map_class:
                             for EachVertex in subgraph.keys():
                                 if nc == True: break
                                 if check_vertex((EachLine[v2],EachLine[v2 + 1]),EachVertex):
-                                    """used for testing"""
+                                    """used for testing
                                     print('tuple(EachLine[v2]) = ', end = "")
                                     print(tuple(EachLine[v2]))
                                     print('tuple(EachLine[v2 + 1]) = ', end = "")
                                     print(tuple(EachLine[v2 + 1]))
                                     print('EachVertex = ' ,end = "")
                                     print(EachVertex)
-                                    """ """
+                                    """ 
                                     d += distance_between(EachLine[v2],EachVertex)
                                     if round(d,1) != 0:
                                         nc = True
 
                                         for EachValue in algorithmgraph[EachKey]:
-                                            """used for testing"""
+                                            """used for testing
                                             print('[EachVertex, round(d,6)]:    ', end="")
                                             print([EachVertex, round(d,6)])
                                             print('EachValue:    ', end="")
                                             print(EachValue)
-                                            """ """
+                                            """ 
                                             EachValue[1] = round(EachValue[1], 2)
                                             if [EachVertex, round(d,2)] == EachValue:  
                                                 Line.append(EachVertex)
@@ -519,33 +540,33 @@ class map_class:
                             for EachVertex in subgraph.keys():
                                 if nc == True: break
                                 if check_vertex((EachLine[v2],EachLine[v2 - 1]),EachVertex):
-                                    """used for testing"""
+                                    """used for testing
                                     print('tuple(EachLine[v2]) = ', end = "")
                                     print(tuple(EachLine[v2]))
                                     print('tuple(EachLine[v2 - 1]) = ', end = "")
                                     print(tuple(EachLine[v2 - 1]))
                                     print('EachVertex = ' ,end = "")
                                     print(EachVertex)
-                                    """ """
+                                    """ 
                                     d += distance_between(EachLine[v2],EachVertex)
                                     if round(d,1) != 0:
                                         
                                         nc = True
                                         for EachValue in algorithmgraph[EachKey]:
-                                            """used for testing"""
+                                            """used for testing
                                             print('[EachVertex, round(d,6)]:    ', end="")
                                             print([EachVertex, round(d,6)])
                                             print('EachValue:    ', end="")
                                             print(EachValue)
-                                            """ """
+                                            """ 
                                             EachValue[1] = round(EachValue[1], 2)
                                             if [EachVertex, round(d,2)] == EachValue:  
                                                 Line.append(EachVertex)
                                                 AlgorithmGraphLines.append(Line)
-                                                """used for testing"""
+                                                """used for testing
                                                 print('[EachVertex, round(d,6)]:    ', end="")
                                                 print([EachVertex, round(d,6)])
-                                                """ """
+                                                """ 
                                                 break
 
                             else: 
@@ -555,7 +576,16 @@ class map_class:
                                 print(d)
                                 """  
                         #breakpoint()
-                        
+        
+        #code to remove duplicates:
+        TempLines = AlgorithmGraphLines  
+        AlgorithmGraphLines = []
+        for EachLine in TempLines:
+            for e in range(0, len(EachLine) ):
+                EachLine[e] = list(EachLine[e])
+
+            if (EachLine not in AlgorithmGraphLines) and (EachLine.reverse() not in AlgorithmGraphLines): AlgorithmGraphLines.append(EachLine)
+        
         return AlgorithmGraphLines 
         
 
@@ -567,7 +597,7 @@ def pressing(buttonposition, button, mouseposition):
 def display_mapping_editor(Lines = [], colour = (192,192,192), 
                            editing = True, makinggraph = False, 
                            selectinggraph = False, selectingalgorithm = False, 
-                           displayingalorithm = False): 
+                           displayingalorithm = False, selectingnodes = False): 
 
     #Editor is a function with different modes
     
@@ -581,12 +611,18 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
         candraw  = False
         pabutton = False #perform algorithm button
 
-    if selectingalgorithm or selectinggraph or displayingalorithm:
+    if selectingalgorithm or selectinggraph or displayingalorithm or selectingnodes:
         mgbutton = False #make graph button
         canpan   = False
         canzoom  = False
         candraw  = False
         pabutton = False #perform algorithm button
+    
+    if selectingnodes:
+        linenumber       = 0
+        coordinatenumber = 0
+        next  = False #defaults
+        prior = False
 
     if editing:
         mgbutton = True
@@ -750,10 +786,16 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
 
         except: pass
 
-        if displayingalorithm:
+        if displayingalorithm or selectingnodes:
             
-            for EachLine in globals()['SubGraphLines']:
-                pygame.draw.lines(map, (3, 123, 252) , False ,EachLine, width = 5)
+            for EachLine in globals()['SubGraphLines']: #go through the edges in the subgraph
+                pygame.draw.lines(map, (3, 123, 252) , False ,EachLine, width = 5) #draw each line
+
+        if selectingnodes:
+            linenumber = linenumber % len(globals()['SubGraphLines']) #if on last edge cycle to first
+            Node = globals()['SubGraphLines'][linenumber][coordinatenumber]
+            pygame.draw.circle(map, (66, 245, 66), Node, 4) #draw the Node
+
 
 
                 
@@ -916,6 +958,10 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
             """  
 
             if event.type == pygame.KEYDOWN:
+
+                if (event.key == pygame.K_LCTRL) or (event.key == pygame.K_RCTRL): 
+                    ctrl = True 
+
                 if selectinggraph:
                     if event.key == pygame.K_RETURN:
                                                  
@@ -926,14 +972,27 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
 
 
                     if event.key == pygame.K_RIGHT:
-                        if selectinggraph:
-                            t -= (time.time() - t) % 2
-                            S += 1
+                        t -= (time.time() - t) % 2
+                        S += 1
 
                     if event.key == pygame.K_LEFT:
-                        if selectinggraph:
-                            t -= (time.time() - t) % 2
-                            S -= 1
+                        t -= (time.time() - t) % 2
+                        S -= 1
+
+                if selectingnodes:
+                    if event.key == pygame.K_RETURN:
+                                                 
+                        """ used for testing 
+                        print('enter pressed')
+                        """
+                        return Node
+
+
+                    if event.key == pygame.K_RIGHT:
+                        next = True
+
+                    if event.key == pygame.K_LEFT:
+                        prior = True
 
                 if displayingalorithm:
                     if event.key == pygame.K_RETURN:
@@ -943,8 +1002,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
                     zoom = 1
                     MapToScreenOffset = [0,100]
 
-                if (event.key == pygame.K_LCTRL) or (event.key == pygame.K_RCTRL): 
-                    ctrl = True 
+
 
 
             if event.type == pygame.MOUSEBUTTONDOWN: #if click   ①
@@ -1079,6 +1137,12 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
                 if (event.key == pygame.K_LCTRL) or (event.key == pygame.K_RCTRL): 
                     ctrl = False           
 
+                if selectingnodes:
+                    if event.key == pygame.K_RIGHT:
+                        next = False                        
+
+                    if event.key == pygame.K_LEFT:
+                        prior = False
 
             if event.type == pygame.MOUSEBUTTONUP: #if click released
 
@@ -1104,8 +1168,24 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
                         """used for testing
                         print(Lines)
                         """
-                    
+        
+        if selectingnodes:
+            if next == True:
+                time.sleep(0.2)
+                if ctrl or (coordinatenumber == (len(globals()['SubGraphLines'][linenumber])-1)): #if on the last coordinate on an edge
+                    linenumber += 1
+                    coordinatenumber = 0
+                else:
+                    coordinatenumber += 1
+            if prior == True:
+                time.sleep(0.2)
+                if ctrl or (coordinatenumber == 0): #if on first coordinate on an edge
+                    linenumber -= 1
+                    coordinatenumber = 0
+                else: 
+                    coordinatenumber -= 1
 
+        
         if panning:
             MouseOffset = [pygame.mouse.get_pos()[0] - InitialMousePos[0], pygame.mouse.get_pos()[1] - InitialMousePos[1]] #how much have panned
                                       #④             #⑤                                #④             #⑤

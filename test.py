@@ -1,7 +1,10 @@
 import pygame, sys
 import time
 import schedule
-print(False ^ True)
+p = 0
+if not(p):
+    print(True)
+
 
 
 """
