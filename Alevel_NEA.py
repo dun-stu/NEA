@@ -3,7 +3,12 @@ import pygame, sys
 import math
 import random
 import time
+import tkinter as tk
+from tkinter import ttk
 pygame.init()
+
+
+
 def check_cycle(StartNode, NodeFrom, List, D):
     for EachConnection in D[StartNode[0]]:
         if EachConnection != NodeFrom:
@@ -342,6 +347,40 @@ class map_class:
                     break
         return MST
 
+    def Djikstra(self, subgraph):
+        msg = 'Select the first Node'
+        popup = tk.Tk()
+        popup.wm_title("") #https://pythonprogramming.net/
+        label = ttk.Label(popup, text=msg, font=("Verdana", 50))
+        label.pack(side="top", fill="x", pady=20)
+        B1 = ttk.Button(popup, text="Okay", command = popup.destroy)
+        B1.pack()
+        popup.mainloop()
+
+        Node1 = self.select_node(subgraph)
+
+        msg = 'Select the second Node' #popup to prompt you
+        popup = tk.Tk()
+        popup.wm_title("") 
+        label = ttk.Label(popup, text=msg, font=("Verdana", 50))
+        label.pack(side="top", fill="x", pady=20)
+        B1 = ttk.Button(popup, text="Okay", command = popup.destroy)
+        B1.pack()
+        popup.mainloop()
+
+        Node2 = self.select_node(subgraph)
+
+
+        global SubGraphLines
+        SubGraphLines = self.get_algorithm_lines(subgraph, subgraph)
+        subgraph = map_class(SubGraphLines)
+        subgraph.Nodes.append(tuple(Node1))
+        subgraph.Nodes.append(tuple(Node2))
+        subgraph.make_graph()
+        subgraph = subgraph.graph
+        SubGraphLines = self.get_algorithm_lines(subgraph, subgraph)
+
+
     def kruscals(self, subgraph):
         Edges = []
         for EachKey in subgraph.keys():
@@ -413,33 +452,19 @@ class map_class:
 
         etc
         """
-        """used for testing
+
+        """used for testing"""
         #choice to be made, for initial testing Kruscals is used
-        algorithmgraph = self.kruscals(subgraph) #algorithm to be created
+        algorithmgraph = self.Djikstra(subgraph) #algorithm to be created
         print('subgraph  ', end="")
         print(subgraph)
         print('algorithm graph   ', end="")
         print(algorithmgraph)
         #breakpoint()
-        """ 
-
-        """used for testing"""
-        Node = self.select_node(subgraph)
         """ """
-        """used for testing"""
+
         global SubGraphLines
-        SubGraphLines = self.get_algorithm_lines(subgraph, subgraph)
-        subgraph = map_class(SubGraphLines)
-        subgraph.Nodes.append(tuple(Node))
-        subgraph.make_graph()
-        subgraph = subgraph.graph
-        SubGraphLines = self.get_algorithm_lines(subgraph, subgraph)
-        """ """
-
-        
-
-        #global SubGraphLines
-        #SubGraphLines = self.get_algorithm_lines(subgraph, algorithmgraph)
+        SubGraphLines = self.get_algorithm_lines(subgraph, algorithmgraph)
         """used for testing
         print(SubGraphLines)
         breakpoint()
@@ -454,11 +479,11 @@ class map_class:
             for EachLine in self.Lines: #possibly add Subgraphlines instead
                 for v1 in range(0, (len(EachLine)-1)):
                    if check_vertex((EachLine[v1],  EachLine[v1 + 1]), EachKey):
-                        """used for testing"""
+                        """used for testing
                         print('EachKey:      ', end="")
                         print(EachKey)
 
-                        """ """
+                        """ 
                         nc = False
                         Line = []
                         Line.append(EachKey)
