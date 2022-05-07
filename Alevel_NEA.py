@@ -348,37 +348,61 @@ class map_class:
         return MST
 
     def Djikstra(self, subgraph):
-        msg = 'Select the first Node'
+        #prompt to select node 
         popup = tk.Tk()
         popup.wm_title("") #https://pythonprogramming.net/
-        label = ttk.Label(popup, text=msg, font=("Verdana", 50))
-        label.pack(side="top", fill="x", pady=20)
-        B1 = ttk.Button(popup, text="Okay", command = popup.destroy)
-        B1.pack()
+        ttk.Label(popup, text='Select the first Node', font=("Verdana", 50)).pack(side="top", fill="x", pady=10)
+        ttk.Label(popup, text='Press enter to select it, and the left and right arrows to navigate', font=("Verdana", 20)).pack(side="top", fill="x", pady=10)
+        ttk.Button(popup, text="Okay", command = popup.destroy).pack()
         popup.mainloop()
 
         Node1 = self.select_node(subgraph)
 
-        msg = 'Select the second Node' #popup to prompt you
+        #popup to prompt you
         popup = tk.Tk()
         popup.wm_title("") 
-        label = ttk.Label(popup, text=msg, font=("Verdana", 50))
-        label.pack(side="top", fill="x", pady=20)
-        B1 = ttk.Button(popup, text="Okay", command = popup.destroy)
-        B1.pack()
+        ttk.Label(popup, text='Select the second Node', font=("Verdana", 50)).pack(side="top", fill="x", pady=10)
+        ttk.Label(popup, text='Press enter to select it, and the left and right arrows to navigate', font=("Verdana", 20)).pack(side="top", fill="x", pady=10)
+        ttk.Button(popup, text="Ok", command = popup.destroy).pack()
         popup.mainloop()
 
         Node2 = self.select_node(subgraph)
 
 
-        global SubGraphLines
-        SubGraphLines = self.get_algorithm_lines(subgraph, subgraph)
-        subgraph = map_class(SubGraphLines)
-        subgraph.Nodes.append(tuple(Node1))
-        subgraph.Nodes.append(tuple(Node2))
+        #code to add the selected points as nodes to the subgraph
+        SubGraphLines = self.get_algorithm_lines(subgraph, subgraph) #get the graph as lines 
+        subgraph = map_class(SubGraphLines)     #so the mapclass can be used
+        subgraph.Nodes.append(tuple(Node1))     #to create a new subgraph but with the two points added
+        subgraph.Nodes.append(tuple(Node2))     #as nodes
         subgraph.make_graph()
         subgraph = subgraph.graph
-        SubGraphLines = self.get_algorithm_lines(subgraph, subgraph)
+        
+        #defaults
+        Unvisited = [] 
+        Visited   = []
+        Table     = []
+        for EachNode in subgraph.keys():
+            Table.append([EachNode, math.inf, None]) # Node, distance, previous node 
+            Unvisited.append(EachNode)      #initially all nodes are unvisited
+        
+        NextNode = Node1
+        d = 0
+        
+
+        Table[[Table[i][0] for i in range(0,len(Table))].index(NextNode)][1] = 0 #distance from a node to itself is 0
+
+        while len(unvisited) != 0: #there is still unvisited nodes
+            
+            
+            for EachValue in subgraph[NextNode]:
+
+                valueindex = [Table[i][0] for i in range(0,len(Table))].index(EachValue[0])  #where a node is in a table
+                
+                if (d + EachValue[1]) < Table[valueindex][1]:   #if this new distance is more than the previous distance
+                    Table[valueindex][1] = d + EachValue[1]     
+                    Table[valueindex][2] = NextNode             #previous node 
+
+
 
 
     def kruscals(self, subgraph):
@@ -609,8 +633,8 @@ class map_class:
             for e in range(0, len(EachLine) ):
                 EachLine[e] = list(EachLine[e])
 
-            if (EachLine not in AlgorithmGraphLines) and (EachLine.reverse() not in AlgorithmGraphLines): AlgorithmGraphLines.append(EachLine)
-        
+            if (EachLine not in AlgorithmGraphLines) and (EachLine[::-1] not in AlgorithmGraphLines): AlgorithmGraphLines.append(EachLine)    #https://www.programiz.com/python-programming/methods/list/reverse
+               #if the line, or its reverse (since a line composed of the same coordinates is just the same line), hasn't been added yet
         return AlgorithmGraphLines 
         
 
@@ -1206,7 +1230,8 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
                 time.sleep(0.2)
                 if ctrl or (coordinatenumber == 0): #if on first coordinate on an edge
                     linenumber -= 1
-                    coordinatenumber = 0
+                    linenumber = linenumber % len(globals()['SubGraphLines'])
+                    coordinatenumber = (len(globals()['SubGraphLines'][linenumber])-1)
                 else: 
                     coordinatenumber -= 1
 
