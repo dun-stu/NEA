@@ -117,6 +117,7 @@ class map_class:
         self.Nodes  = []
         self.graph  = {}
         self.colour = (192,192,192)
+        self.algorithm = None
 
     def get_nodes(self, endnodes):
             """used for testing
@@ -309,7 +310,7 @@ class map_class:
             
             SubGraphs.append(subgraph)
 
-        return display_mapping_editor(self.Lines,self.colour, False, False, True)
+        self.subgraph = display_mapping_editor(self.Lines,self.colour, False, False, True)
 
     def Prims(self, subgraph):
         Edges = []
@@ -345,28 +346,43 @@ class map_class:
                     display_mapping_editor(self.Lines, self.colour, False, False, False, False, True) #so the additions are made incrementally on the screen
                     """ """
                     break
-        return MST
+        self.algorithmgraph = MST
 
     def Djikstra(self, subgraph):
-        #prompt to select node 
-        popup = tk.Tk()
-        popup.wm_title("") #https://pythonprogramming.net/
-        ttk.Label(popup, text='Select the first Node', font=("Verdana", 50)).pack(side="top", fill="x", pady=10)
-        ttk.Label(popup, text='Press enter to select it, and the left and right arrows to navigate', font=("Verdana", 20)).pack(side="top", fill="x", pady=10)
-        ttk.Button(popup, text="Okay", command = popup.destroy).pack()
-        popup.mainloop()
 
-        Node1 = self.select_node(subgraph)
+        if len(subgraph.keys()) == 1: #if the subgraph is just a single point looped
+             return subgraph           #then the shortest path from a point to itself is just the only path in the graph
 
-        #popup to prompt you
-        popup = tk.Tk()
-        popup.wm_title("") 
-        ttk.Label(popup, text='Select the second Node', font=("Verdana", 50)).pack(side="top", fill="x", pady=10)
-        ttk.Label(popup, text='Press enter to select it, and the left and right arrows to navigate', font=("Verdana", 20)).pack(side="top", fill="x", pady=10)
-        ttk.Button(popup, text="Ok", command = popup.destroy).pack()
-        popup.mainloop()
+        Node1 = None
+        Node2 = None
 
-        Node2 = self.select_node(subgraph)
+        """used for testing
+        print('Node1:   ', end = "")
+        print(Node1)
+        print('Node2:   ', end = "")
+        print(Node2)
+        """ 
+
+        while Node1 == Node2: #no shortest path between a node and itself, except in case above
+            #prompt to select node 
+            popup = tk.Tk()
+            popup.wm_title("") #https://pythonprogramming.net/
+            ttk.Label(popup, text='Select the first Node', font=("Verdana", 50)).pack(side="top", fill="x", pady=10)
+            ttk.Label(popup, text='Press enter to select it, and the left and right arrows to navigate', font=("Verdana", 20)).pack(side="top", fill="x", pady=10)
+            ttk.Button(popup, text="Okay", command = popup.destroy).pack()
+            popup.mainloop()
+
+            Node1 = tuple(self.select_node(subgraph))
+
+            #popup to prompt you
+            popup = tk.Tk()
+            popup.wm_title("") 
+            ttk.Label(popup, text='Select the second Node', font=("Verdana", 50)).pack(side="top", fill="x", pady=10)
+            ttk.Label(popup, text='Press enter to select it, and the left and right arrows to navigate', font=("Verdana", 20)).pack(side="top", fill="x", pady=10)
+            ttk.Button(popup, text="Ok", command = popup.destroy).pack()
+            popup.mainloop()
+
+            Node2 = tuple(self.select_node(subgraph))
 
 
         #code to add the selected points as nodes to the subgraph
@@ -377,24 +393,67 @@ class map_class:
         subgraph.make_graph()
         subgraph = subgraph.graph
         
+        
+        """used for testing
+        print('Node1:   ', end = "")
+        print(Node1)
+        print('Node2:   ', end = "")
+        print(Node2)
+        """ 
+        #Optimising subgraph for this algorithm
+
+        for EachKey in subgraph.keys():
+            v1 = 0
+            for EachValue1 in subgraph[EachKey]: #so if subgraph[EachKey] is shortened, it will end at the last value
+
+                if subgraph[EachKey][v1][0] == EachKey: subgraph[EachKey].remove(subgraph[EachKey][v1]) #if there is a loop from a point to itself, and that isn't the whole subgraph
+                v2 = 0
+                for EachValue2 in subgraph[EachKey]:
+                    if subgraph[EachKey][v1][0] == subgraph[EachKey][v2][0]: #if a node connects to another one twice
+                        if   subgraph[EachKey][v1][1] > subgraph[EachKey][v2][1]: 
+                            subgraph[EachKey].remove(subgraph[EachKey][v1])
+                            v1 -= 1
+
+                        elif subgraph[EachKey][v1][1] < subgraph[EachKey][v2][1]:
+                           subgraph[EachKey].remove(subgraph[EachKey][v2])
+                           v1 -= 1
+
+                    v2 += 1
+                        #the larger connection is removed, as this will never be utilised in a shortest path
+                v1 += 1
+
         #defaults
         Unvisited = [] 
         Visited   = []
         Table     = []
+
         for EachNode in subgraph.keys():
             Table.append([EachNode, math.inf, None]) # Node, distance, previous node 
+            """used for testing
+            print([EachNode, math.inf, None])
+            """ 
             Unvisited.append(EachNode)      #initially all nodes are unvisited
         
         NextNode = Node1
         d = 0
-        
+
+        """used for testing
+        print('Node1:   ', end = "")
+        print(Node1)
+        print('Node2:   ', end = "")
+        print(Node2)
+        """ 
 
         Table[[Table[i][0] for i in range(0,len(Table))].index(NextNode)][1] = 0 #distance from a node to itself is 0
 
-        while len(unvisited) != 0: #there is still unvisited nodes
-            
-            
-            for EachValue in subgraph[NextNode]:
+        while len(Visited) != len(subgraph.keys()): #there is still unvisited nodes
+            """used for testing
+            print('Table:')
+            for Each in Table:  
+                print(Each)
+            print()
+            """
+            for EachValue in subgraph[NextNode]: #all that connect to the node being visited
 
                 valueindex = [Table[i][0] for i in range(0,len(Table))].index(EachValue[0])  #where a node is in a table
                 
@@ -402,8 +461,137 @@ class map_class:
                     Table[valueindex][1] = d + EachValue[1]     
                     Table[valueindex][2] = NextNode             #previous node 
 
+            """used for testing
+            print('Next Node:   ',end = "")
+            print(NextNode)
+            #print('Unvisited:   ',end = "")
+            #print(Unvisited)
+            """ 
+
+            Visited.append(NextNode)
+            #Unvisited.remove(NextNode)
+
+            d = math.inf 
+            for key in range(0,len(Table)): #get the unvisited node with the lowest distance to visit
+                if (Table[key][1] < d) and (Table[key][0] not in Visited):  #if the key is unvisited and it's distance is the lowest one yet
+                    d = Table[key][1]        
+                    NextNode = Table[key][0] #next node to visit
+
+        #converting the path between Node1 and Node 2 into a dictionary
+        NextNode = Node2
+        algorithmgraph = {}
+        while NextNode != Node1: #Each line in the path from Node2 to Node1 will be added
+
+            valueindex = [Table[i][0] for i in range(0,len(Table))].index(NextNode)
+
+            for EachConnection in subgraph[NextNode]: #get the connection 
+                if Table[valueindex][2] == EachConnection[0]: #to the previous node in the path
+                    break #EachConnection will be the previous Node connection when break
+
+            try:    algorithmgraph[NextNode].append(EachConnection)     #if the node has been added already  
+            except: algorithmgraph.update({NextNode: [EachConnection]}) #if the node is not part of the dictionary yet
+
+            try:    algorithmgraph[EachConnection[0]].append([NextNode, EachConnection[1]]) 
+            except: algorithmgraph.update({EachConnection[0]: [[NextNode, EachConnection[1]]]})
+
+            NextNode = EachConnection[0]
+
+        print(algorithmgraph)
+        print(subgraph)
+        self.algorithmgraph = algorithmgraph
+
+    def breadth_first(self, subgraph):
+
+        if len(subgraph.keys()) == 1: #if the subgraph is just a single point looped
+             return subgraph           #then the shortest path from a point to itself is just the only path in the graph
+
+        Node1 = None
 
 
+        """used for testing
+        print('Node1:   ', end = "")
+        print(Node1)
+        """
+
+        
+        #prompt to select node 
+        popup = tk.Tk()
+        popup.wm_title("") #https://pythonprogramming.net/
+        ttk.Label(popup, text='Select the start Node', font=("Verdana", 50)).pack(side="top", fill="x", pady=10)
+        ttk.Label(popup, text='Press enter to select it, and the left and right arrows to navigate', font=("Verdana", 20)).pack(side="top", fill="x", pady=10)
+        ttk.Button(popup, text="Okay", command = popup.destroy).pack()
+        popup.mainloop()
+
+        Node1 = tuple(self.select_node(subgraph))
+
+        #code to add the selected points as nodes to the subgraph
+        SubGraphLines1 = self.get_algorithm_lines(subgraph, subgraph) #get the graph as lines 
+        subgraph = map_class(SubGraphLines1)     #so the mapclass can be used
+        subgraph.Nodes.append(tuple(Node1))     #to create a new subgraph but with the two points added
+        subgraph.make_graph()
+        subgraph = subgraph.graph
+        
+        
+        """used for testing
+        print('Node1:   ', end = "")
+        print(Node1)
+        """
+
+        #Optimising subgraph for this algorithm
+
+        for EachKey in subgraph.keys():
+            v1 = 0
+            for EachValue1 in subgraph[EachKey]: #so if subgraph[EachKey] is shortened, it will end at the last value
+
+                if subgraph[EachKey][v1][0] == EachKey: subgraph[EachKey].remove(subgraph[EachKey][v1]) #if there is a loop from a point to itself, and that isn't the whole subgraph
+                v2 = 0
+                for EachValue2 in subgraph[EachKey]:
+                    if subgraph[EachKey][v1][0] == subgraph[EachKey][v2][0]: #if a node connects to another one twice
+                        if   subgraph[EachKey][v1][1] > subgraph[EachKey][v2][1]: subgraph[EachKey].remove(subgraph[EachKey][v1])
+
+                        elif subgraph[EachKey][v1][1] < subgraph[EachKey][v2][1]: subgraph[EachKey].remove(subgraph[EachKey][v2])
+                    v2 += 1
+                        #the larger connection is removed, as this will never be utilised in a shortest path
+                v1 += 1
+
+        algorithmgraph = {}
+        queue = [Node1]
+        #Unvisited = [EachNode for EachNode in subgraph.keys()]
+        
+        while len(queue) != 0: #not empty
+            VisitingNode = queue[0] #move onto the next Node on top of the stack
+
+            for EachConnection in subgraph[VisitingNode]:
+                if EachConnection[0] not in algorithmgraph.keys():
+                    try:    algorithmgraph[VisitingNode].append(EachConnection)     #if the node has been added already  
+                    except: algorithmgraph.update({VisitingNode: [EachConnection]}) #if the node is not part of the dictionary yet
+
+                    try:    algorithmgraph[EachConnection[0]].append([VisitingNode, EachConnection[1]]) 
+                    except: algorithmgraph.update({EachConnection[0]: [[VisitingNode, EachConnection[1]]]})
+                    """used for testing
+                    print('VisitingNode:    ',end="")
+                    print(VisitingNode)
+                    print('EachConnection[0]:   ',end="")
+                    print(EachConnection[0])
+                    #print('Unvisited:   ',end="")
+                    #print(Unvisited)
+                    print('Stack:   ',end="")
+                    print(Stack)
+                    """ 
+                    #Unvisited.remove(VisitingNode)
+                    queue.append(EachConnection[0])
+                    """used for testing
+                    print('Stack:   ',end="")
+                    print(Stack)
+                    """ 
+                    global SubGraphLines
+                    SubGraphLines = self.get_algorithm_lines(subgraph, algorithmgraph)
+                    display_mapping_editor(self.Lines, self.colour, False, False, False, False, True)
+                    
+                    
+            else: queue.pop(0) # if none of the connections are Unvisited
+
+        self.algorithmgraph = algorithmgraph
 
     def kruscals(self, subgraph):
         Edges = []
@@ -456,39 +644,136 @@ class map_class:
                 display_mapping_editor(self.Lines, self.colour, False, False, False, False, True)
                 """ """
             edgenumber += 1
-        return MST
+        self.algorithmgraph = MST
 
+    def depth_first(self, subgraph):
+
+        if len(subgraph.keys()) == 1: #if the subgraph is just a single point looped
+             return subgraph           #then the shortest path from a point to itself is just the only path in the graph
+
+        Node1 = None
+
+
+        """used for testing
+        print('Node1:   ', end = "")
+        print(Node1)
+        """
+
+        
+        #prompt to select node 
+        popup = tk.Tk()
+        popup.wm_title("") #https://pythonprogramming.net/
+        ttk.Label(popup, text='Select the start Node', font=("Verdana", 50)).pack(side="top", fill="x", pady=10)
+        ttk.Label(popup, text='Press enter to select it, and the left and right arrows to navigate', font=("Verdana", 20)).pack(side="top", fill="x", pady=10)
+        ttk.Button(popup, text="Okay", command = popup.destroy).pack()
+        popup.mainloop()
+
+        Node1 = tuple(self.select_node(subgraph))
+
+        #code to add the selected points as nodes to the subgraph
+        SubGraphLines1 = self.get_algorithm_lines(subgraph, subgraph) #get the graph as lines 
+        subgraph = map_class(SubGraphLines1)     #so the mapclass can be used
+        subgraph.Nodes.append(tuple(Node1))     #to create a new subgraph but with the two points added
+        subgraph.make_graph()
+        subgraph = subgraph.graph
+        
+        
+        """used for testing
+        print('Node1:   ', end = "")
+        print(Node1)
+        """
+
+        #Optimising subgraph for this algorithm
+
+        for EachKey in subgraph.keys():
+            v1 = 0
+            for EachValue1 in subgraph[EachKey]: #so if subgraph[EachKey] is shortened, it will end at the last value
+
+                if subgraph[EachKey][v1][0] == EachKey: subgraph[EachKey].remove(subgraph[EachKey][v1]) #if there is a loop from a point to itself, and that isn't the whole subgraph
+                v2 = 0
+                for EachValue2 in subgraph[EachKey]:
+                    if subgraph[EachKey][v1][0] == subgraph[EachKey][v2][0]: #if a node connects to another one twice
+                        if   subgraph[EachKey][v1][1] > subgraph[EachKey][v2][1]: subgraph[EachKey].remove(subgraph[EachKey][v1])
+
+                        elif subgraph[EachKey][v1][1] < subgraph[EachKey][v2][1]: subgraph[EachKey].remove(subgraph[EachKey][v2])
+                    v2 += 1
+                        #the larger connection is removed, as this will never be utilised in a shortest path
+                v1 += 1
+
+        algorithmgraph = {}
+        Stack = [Node1]
+        #Unvisited = [EachNode for EachNode in subgraph.keys()]
+        
+        while len(Stack) != 0: #not empty
+            VisitingNode = Stack[len(Stack) -1] #move onto the next Node on top of the stack
+
+            for EachConnection in subgraph[VisitingNode]:
+                if EachConnection[0] not in algorithmgraph.keys():
+                    try:    algorithmgraph[VisitingNode].append(EachConnection)     #if the node has been added already  
+                    except: algorithmgraph.update({VisitingNode: [EachConnection]}) #if the node is not part of the dictionary yet
+
+                    try:    algorithmgraph[EachConnection[0]].append([VisitingNode, EachConnection[1]]) 
+                    except: algorithmgraph.update({EachConnection[0]: [[VisitingNode, EachConnection[1]]]})
+                    """used for testing"""
+                    print('VisitingNode:    ',end="")
+                    print(VisitingNode)
+                    print('EachConnection[0]:   ',end="")
+                    print(EachConnection[0])
+                    #print('Unvisited:   ',end="")
+                    #print(Unvisited)
+                    print('Stack:   ',end="")
+                    print(Stack)
+                    """ """
+                    #Unvisited.remove(VisitingNode)
+                    Stack.append(EachConnection[0])
+                    """used for testing"""
+                    print('Stack:   ',end="")
+                    print(Stack)
+                    """ """
+                    global SubGraphLines
+                    SubGraphLines = self.get_algorithm_lines(subgraph, algorithmgraph)
+                    display_mapping_editor(self.Lines, self.colour, False, False, False, False, True)
+                    break
+                    
+            else: Stack.pop() # if none of the connections are Unvisited
+
+        self.algorithmgraph =  algorithmgraph
+        
     def perform_algorithm(self):
 
-        subgraph = self.select_graph()
-        
+        #prompt to select subgraph 
+        popup = tk.Tk()
+        popup.wm_title("") 
+        ttk.Button(popup, text="    Select subgraph     ", command = lambda:[popup.destroy(), self.select_graph()]).pack() #allow subgraph to be selected https://stackoverflow.com/questions/13865009/have-multiple-commands-when-button-is-pressed
+        ttk.Label(popup, text='Press enter to select it, and the left and right arrows to navigate', font=("Verdana", 20)).pack(side="top", fill="x", pady=10)       
+        popup.mainloop()
+          
+         
+        cycle = check_cycle(list(subgraph.values())[0][0], None, [list(subgraph.values())[0][0]], self.subgraph) # make into an algorithm  
+
+        popup = tk.Tk()
+        popup.wm_title("")  
+        ttk.Label(popup, text=' Select an algorithm to perform ', font=("Verdana", 40)).pack(side="top", fill="x", pady=10)
+
+        ttk.Button(popup, text="      Prims         ", command = lambda:[popup.destroy(),      self.Prims(self.subgraph)    ]).pack()
+        ttk.Button(popup, text="     kruscals       ", command = lambda:[popup.destroy(),    self.kruscals(self.subgraph)   ]).pack() #make not allowed if subgraph is a tree (C = False)
+        ttk.Button(popup, text="     Djikstra       ", command = lambda:[popup.destroy(),    self.Djikstra(self.subgraph)   ]).pack()
+        ttk.Button(popup, text="    depth_first     ", command = lambda:[popup.destroy(),   self.depth_first(self.subgraph) ]).pack()
+        ttk.Button(popup, text="   breadth_first    ", command = lambda:[popup.destroy(), self.breadth_first(self.subgraph) ]).pack()
+        popup.mainloop()
+        """used for testing
+        print(subgraph)
+         
         global SubGraphs
         del SubGraphs
-        C = check_cycle(list(subgraph.values())[0][0], None, [list(subgraph.values())[0][0]], subgraph)
-        
+
+        """
         """E used for testing
         print(C)
         return E
-
-        algorithm = display_mapping_editor(self.Lines, self.colour, False, False, False, True)
-        if algorithm = 'KRUSCAL'S': 
-            algorithmgraph = self.Kruscals(subgraph)
-
-        etc
         """
-
-        """used for testing"""
-        #choice to be made, for initial testing Kruscals is used
-        algorithmgraph = self.Djikstra(subgraph) #algorithm to be created
-        print('subgraph  ', end="")
-        print(subgraph)
-        print('algorithm graph   ', end="")
-        print(algorithmgraph)
-        #breakpoint()
-        """ """
-
         global SubGraphLines
-        SubGraphLines = self.get_algorithm_lines(subgraph, algorithmgraph)
+        SubGraphLines = self.get_algorithm_lines(self.subgraph, self.algorithmgraph)
         """used for testing
         print(SubGraphLines)
         breakpoint()
@@ -551,9 +836,8 @@ class map_class:
                                             """used for testing
                                             print('[EachVertex, round(d,6)]:    ', end="")
                                             print([EachVertex, round(d,6)])
-                                            print('EachValue:    ', end="")
-                                            print(EachValue)
-                                            """ 
+                                            """
+                                             
                                             EachValue[1] = round(EachValue[1], 2)
                                             if [EachVertex, round(d,2)] == EachValue:  
                                                 Line.append(EachVertex)
@@ -840,6 +1124,13 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
             for EachLine in globals()['SubGraphLines']: #go through the edges in the subgraph
                 pygame.draw.lines(map, (3, 123, 252) , False ,EachLine, width = 5) #draw each line
 
+        if displayingalorithm:
+            for EachNode in [EachVertex[0] for EachVertex in globals()['SubGraphLines'] ]:
+                pygame.draw.circle(map, (66, 245, 66), EachNode, 4) #to be changed
+
+            for EachNode in [EachVertex[len(EachVertex)-1] for EachVertex in globals()['SubGraphLines'] ]:
+                pygame.draw.circle(map, (66, 245, 66), EachNode, 4) #to be changed
+
         if selectingnodes:
             linenumber = linenumber % len(globals()['SubGraphLines']) #if on last edge cycle to first
             Node = globals()['SubGraphLines'][linenumber][coordinatenumber]
@@ -1029,6 +1320,11 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
                         S -= 1
 
                 if selectingnodes:
+                    """used for testing"""
+                    if ctrl:
+                        print('ctrl')
+                    """ """
+
                     if event.key == pygame.K_RETURN:
                                                  
                         """ used for testing 
@@ -1038,9 +1334,15 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
 
 
                     if event.key == pygame.K_RIGHT:
+                        """used for testing"""
+                        print('Right arrow clicked')
+                        """ """
                         next = True
 
                     if event.key == pygame.K_LEFT:
+                        """used for testing"""
+                        print('Left arrow clicked')
+                        """ """
                         prior = True
 
                 if displayingalorithm:
@@ -1057,10 +1359,10 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
             if event.type == pygame.MOUSEBUTTONDOWN: #if click   ①
                 
                 if (event.button == 4) or (event.button == 5) and (zooming == False) and canzoom: #the mouse scroll ①
-                    """used for testing"""
+                    """used for testing
                     print('zoomed from: ', end = "")
                     print(pygame.mouse.get_pos())
-                    """ """
+                    """ 
                     initialzoom = zoom
                     zooming     = True
 
@@ -1188,9 +1490,15 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
 
                 if selectingnodes:
                     if event.key == pygame.K_RIGHT:
+                        """used for testing"""
+                        print('Right arrow released')
+                        """ """
                         next = False                        
 
                     if event.key == pygame.K_LEFT:
+                        """used for testing"""
+                        print('Left arrow released')
+                        """ """
                         prior = False
 
             if event.type == pygame.MOUSEBUTTONUP: #if click released
@@ -1307,4 +1615,4 @@ display_mapping_editor(Lines)
 
 colour = (192,192,192)
 
-#display_mapping_editor()
+display_mapping_editor()
