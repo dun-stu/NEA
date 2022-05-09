@@ -5,6 +5,8 @@ import random
 import time
 import tkinter as tk
 from tkinter import ttk
+from tkinter import *
+import os
 pygame.init()
 
 
@@ -27,6 +29,13 @@ def check_cycle(StartNode, NodeFrom, List, D):
             if C == True: return C
 
     return False
+
+def cant_select(msg, showing=False):
+    popup = tk.Tk()
+    popup.wm_title("") 
+    ttk.Label(popup, text=msg, font=("Verdana", 20)).pack(side="top", fill="x", pady=10)       
+    Button(popup, text="OK",  width=12 , command = popup.destroy).pack(pady="5") 
+    
 
 def check_vertex(CoordinateSet1, CoordinateSet2, Version = 1): #to check if the lines between two sets of coordinates intersect
   
@@ -260,9 +269,6 @@ class map_class:
 
             self.graph[each] = temp
             
-#comment what
-
-
     def make_graph(self, endnodes = True):
         self.get_nodes(endnodes)
         self.graph = {EachNode:[] for EachNode in self.Nodes}
@@ -738,7 +744,7 @@ class map_class:
             else: Stack.pop() # if none of the connections are Unvisited
 
         self.algorithmgraph =  algorithmgraph
-        
+                
     def perform_algorithm(self):
 
         #prompt to select subgraph 
@@ -749,17 +755,23 @@ class map_class:
         popup.mainloop()
           
          
-        cycle = check_cycle(list(subgraph.values())[0][0], None, [list(subgraph.values())[0][0]], self.subgraph) # make into an algorithm  
+        cycle = check_cycle(list(self.subgraph.values())[0][0], None, [list(self.subgraph.values())[0][0]], self.subgraph) # make into an algorithm  
 
         popup = tk.Tk()
         popup.wm_title("")  
         ttk.Label(popup, text=' Select an algorithm to perform ', font=("Verdana", 40)).pack(side="top", fill="x", pady=10)
 
-        ttk.Button(popup, text="      Prims         ", command = lambda:[popup.destroy(),      self.Prims(self.subgraph)    ]).pack()
-        ttk.Button(popup, text="     kruscals       ", command = lambda:[popup.destroy(),    self.kruscals(self.subgraph)   ]).pack() #make not allowed if subgraph is a tree (C = False)
-        ttk.Button(popup, text="     Djikstra       ", command = lambda:[popup.destroy(),    self.Djikstra(self.subgraph)   ]).pack()
-        ttk.Button(popup, text="    depth_first     ", command = lambda:[popup.destroy(),   self.depth_first(self.subgraph) ]).pack()
-        ttk.Button(popup, text="   breadth_first    ", command = lambda:[popup.destroy(), self.breadth_first(self.subgraph) ]).pack()
+        if cycle: #if not a tree
+            Button(popup, text="      Prims         ",  width=12 , bg=OnButtonColour, command = lambda:[popup.destroy(),      self.Prims(self.subgraph)    ]).pack(pady="5")
+            Button(popup, text="     kruscals       ",  width=12 , bg=OnButtonColour, command = lambda:[popup.destroy(),    self.kruscals(self.subgraph)   ]).pack(pady="5") 
+        else:
+            errormessage = 'Cannot perform this algorithm on a Tree'
+            Button(popup, text="      Prims         ",  width=12 , bg=OffButtonColour, command = lambda:[cant_select(errormessage)]).pack(pady="5")
+            Button(popup, text="     kruscals       ",  width=12 , bg=OffButtonColour, command = lambda:[cant_select(errormessage)]).pack(pady="5") 
+       
+        Button(popup, text="     Djikstra       ",  width=12 , bg=OnButtonColour, command = lambda:[popup.destroy(),    self.Djikstra(self.subgraph)   ]).pack(pady="5")
+        Button(popup, text="    depth first     ",  width=12 , bg=OnButtonColour, command = lambda:[popup.destroy(),   self.depth_first(self.subgraph) ]).pack(pady="5")
+        Button(popup, text="   breadth first    ",  width=12 , bg=OnButtonColour, command = lambda:[popup.destroy(), self.breadth_first(self.subgraph) ]).pack(pady="5")
         popup.mainloop()
         """used for testing
         print(subgraph)
@@ -780,6 +792,7 @@ class map_class:
         """ 
         display_mapping_editor(self.Lines, self.colour, False, False, False, False, True)
         del SubGraphLines
+        del self.subgraph
 
     def get_algorithm_lines(self, subgraph, algorithmgraph):
         AlgorithmGraphLines = []
@@ -926,6 +939,18 @@ def pressing(buttonposition, button, mouseposition):
    if (buttonposition[0]) < mouseposition[0] < (buttonposition[0] + (button.get_rect()).width) and (buttonposition[1]) < mouseposition[1] < (buttonposition[1] + (button.get_rect()).height): return True
    else: return False   
 
+def Save(Lines):
+    userdirectory = os.path.join(os.getcwd(), str(username))
+    if os.path.isdir(os.path.join(userdirectory, 'Lines.txt')): #if there is a directory called lines
+        for l in range(1,math.inf):
+            if not os.path.isdir(os.path.join(userdirectory, 'Lines[' + str(l) + '].txt')): #get the next available index to save the file 
+                filename = 'Lines[' + str(l) + '].txt'
+                break
+    else: filename = 'Lines.txt'
+
+
+
+
 
 def display_mapping_editor(Lines = [], colour = (192,192,192), 
                            editing = True, makinggraph = False, 
@@ -938,6 +963,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
 
     #Varying functionality allowed depending on the mode
     if makinggraph:
+        svbutton = False #save button
         mgbutton = False #make graph button
         canpan   = True
         canzoom  = True
@@ -945,6 +971,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
         pabutton = False #perform algorithm button
 
     if selectingalgorithm or selectinggraph or displayingalorithm or selectingnodes:
+        svbutton = False
         mgbutton = False #make graph button
         canpan   = False
         canzoom  = False
@@ -952,12 +979,14 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
         pabutton = False #perform algorithm button
     
     if selectingnodes:
+        svbutton = False
         linenumber       = 0
         coordinatenumber = 0
         next  = False #defaults
         prior = False
 
     if editing:
+        svbutton = True
         mgbutton = True
         canpan   = True
         canzoom  = True
@@ -981,16 +1010,10 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
     MapBoxPosition        = (1100,6)
     #A small image showing the whole drawing surface for positional awareness during panning/zooming
 
-    #button information
-    OffButtonTextColour = (54, 50, 50)
-    OffButtonColour     = (227, 220, 220)
-    OnButtonTextColour  = (0, 0, 0)
-    OnButtonColour      = (255, 255, 255)
-
     #defaults for the buttons
     GraphButtonTextColour = OffButtonTextColour
     GraphButtonColour     = OffButtonColour
-    GraphButtonPosition   = (550,10)
+    GraphButtonPosition   = (750,10)
 
     UndoButtonTextColour  = OffButtonTextColour
     UndoButtonColour      = OffButtonColour
@@ -1002,7 +1025,12 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
 
     PerformAlgorithmTextColour     = OffButtonTextColour
     PerformAlgorithmButtonColour   = OffButtonColour
-    PerformAlgorithmButtonPosition = (510,55)
+    PerformAlgorithmButtonPosition = (710,55)
+
+    SaveButtonPosition   = (300,30)
+    SaveButtonTextColour = OffButtonTextColour
+    SaveButtonColour     = OffButtonColour
+        
 
     zoomtext    = (pygame.font.SysFont('arial', 16)).render('      Zoom        ', True, (0,0,0)) 
 
@@ -1220,6 +1248,13 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
         else:
             GraphButtonTextColour =  OffButtonTextColour #if there are no lines, a graph can't be made
             GraphButtonColour     =  OffButtonColour
+
+        if linesexist and svbutton:   
+            SaveButtonTextColour =  OnButtonTextColour
+            SaveButtonColour     =  OnButtonColour
+        else:
+            SaveButtonTextColour =  OffButtonTextColour #if there are no lines, a graph can't be made
+            SaveButtonColour     =  OffButtonColour
         
         try:
             mapobject = mapobject #if the graph has been made yet
@@ -1253,10 +1288,12 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
         graphbutton = (pygame.font.SysFont('arial', 32)).render(' Make Graph ', True, GraphButtonTextColour, GraphButtonColour)
         undobutton  = (pygame.font.SysFont('arial', 25)).render(' Undo ', True, UndoButtonTextColour, UndoButtonColour)
         redobutton  = (pygame.font.SysFont('arial', 25)).render(' Redo ', True, RedoButtonTextColour, RedoButtonColour)
+        savebutton  = (pygame.font.SysFont('arial', 40)).render(' Save ', True, SaveButtonTextColour, SaveButtonColour)
         zoomupbutton   = (pygame.font.SysFont('arial', 13)).render('    +    ', True, ZoomUpTextColour, ZoomUpButtonColour)
         zoomdownbutton = (pygame.font.SysFont('arial', 13)).render('    -    ', True, ZoomDownTextColour, ZoomDownButtonColour)
         zoompercentage = (pygame.font.SysFont('arial', 13)).render(str(str(int(zoom * 100)) + '%'), True, (0,0,0))
         performalgorithmbutton = (pygame.font.SysFont('arial', 32)).render(' Perform Algorithm ', True, PerformAlgorithmTextColour, PerformAlgorithmButtonColour)
+        
 
         screen.blit(map, MapToScreenOffset) # the map surface is blit to the screen, with offsets to account for panning, zooming and the Options bar
         screen.blit(optionsbar, (0,0))
@@ -1267,6 +1304,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
         screen.blit(graphbutton , GraphButtonPosition)
         screen.blit(undobutton  , UndoButtonPosition)
         screen.blit(redobutton  , RedoButtonPosition)
+        screen.blit(savebutton  , SaveButtonPosition)
         screen.blit(zoomtext, ZoomTextPosition)
         screen.blit(zoompercentage , ZoomPercentagePosition)
         screen.blit(zoomupbutton   , ZoomUpButtonPosition)
@@ -1388,8 +1426,9 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
                         """
                         return SubGraphs[S]
 
-
-
+                    if pressing(SaveButtonPosition, savebutton, pygame.mouse.get_pos()) and (SaveButtonColour ==  OnButtonColour):
+                        
+                        Save(Lines)
 
                     if pressing(GraphButtonPosition, graphbutton, pygame.mouse.get_pos()) and (GraphButtonColour ==  OnButtonColour):
                         mapobject = map_class(Lines)
@@ -1596,23 +1635,180 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
             elif pygame.mouse.get_pos()[0] >= 1534:#decreased from 1536
                 if ((MapToScreenOffset[0] - o) + round(MapSize[0] * zoom)) >= 1536:
                     MapToScreenOffset[0] -= o
-                    
-            
+
+def login():
+    global loginpage
+    loginpage = tk.Tk()
+    loginpage.wm_title("New Account")  
+    loginpage.geometry('1536x800')
+
+    username  = StringVar()
+    password  = StringVar() 
+
+    ttk.Label(loginpage, text=' Make a New Account ', font=("Verdana", 40)).pack(side="top", fill="x", pady=10)
+    
+    ttk.Label(loginpage, text=' Username ', font=("Verdana", 20)).pack(side="top", fill="x", pady=20, padx=310)
+    ttk.Entry(loginpage, width=50, font=('Arial 24'), textvariable = username).pack()
+
+    ttk.Label(loginpage, text=' Password ', font=("Verdana", 20)).pack(side="top", fill="x", pady=20, padx=310)
+    ttk.Entry(loginpage, width=50, font=('Arial 24'), textvariable = password,  show="*").pack() 
+
+    Button(loginpage, text=" Register ",  width=55, height=3,  command = lambda:[check_login(username.get(), password.get())]).pack(pady=30) #login to be coded
+
+    loginpage.mainloop()
+   
+def check_login(username, password):
+
+    userdirectory = os.path.join(os.getcwd(), str(username))
+    if os.path.isdir(userdirectory): #if there is a directory with the username given
+         
+        file = open(os.path.join(userdirectory, 'password.txt'), "r")
+        p = file.read() #Actual password
+        file.close()
+        if password == p:
+            global account
+            account = username
+            popup = tk.Tk()
+            popup.wm_title("") 
+            ttk.Label(popup, text='Logged In successfully', font=("Verdana", 20)).pack(side="top", fill="x", pady=10)       
+            Button(popup, text="OK",  width=12 , command = lambda:[popup.destroy(), loginpage.destroy()]).pack(pady="5") 
+
+    else: cant_select('Invalid Credentials')
+
+             
+
+def new_account():
+    global accountpage
+    accountpage = tk.Tk()
+    accountpage.wm_title("New Account")  
+    accountpage.geometry('1536x800')
+
+    username  = StringVar()
+    password  = StringVar()
+    password2 = StringVar()
+    email     = StringVar()
+
+    ttk.Label(accountpage, text=' Make a New Account ', font=("Verdana", 40)).pack(side="top", fill="x", pady=10)
+    
+    ttk.Label(accountpage, text=' Username ', font=("Verdana", 20)).pack(side="top", fill="x", pady=20, padx=310)
+    ttk.Entry(accountpage, width=50, font=('Arial 24'), textvariable = username).pack()
+
+    ttk.Label(accountpage, text=' Password ', font=("Verdana", 20)).pack(side="top", fill="x", pady=20, padx=310)
+    ttk.Entry(accountpage, width=50, font=('Arial 24'), textvariable = password,  show="*").pack() 
+
+    ttk.Label(accountpage, text=' Re enter Password ', font=("Verdana", 20)).pack(side="top", fill="x", pady=20, padx=310)
+    ttk.Entry(accountpage, width=50, font=('Arial 24'), textvariable = password2, show="*").pack() 
+
+    ttk.Label(accountpage, text=' Email ', font=("Verdana", 20)).pack(side="top", fill="x", pady=20, padx=310)
+    ttk.Entry(accountpage, width=50, font=('Arial 24'), textvariable = email).pack()
+
+    Button(accountpage, text=" Register ",  width=55, height=3,  command = lambda:[Make_account(username.get(), password.get(), password2.get(), email.get())]).pack(pady=30) #login to be coded
+
+    accountpage.mainloop()
+
+def Make_account(username, password, password2, email):  
+    """used for testing
+    print(username)
+    print(len(username))
+    """ 
+    Valid = True
+    
+    for char in[ '/', '"', "'", ':', ';','{','}','=','>','<',' ']:  #unnecessary characters, which may be used in injection attacks
+        if ( (char in username)  or 
+             (char in password)  or
+             (char in password2) or 
+             (char in email)   ): Valid = False
+    
+    if not Valid:
+        cant_select(' Faulty input ')
+        return
+
+    elif password != password2:
+        cant_select(' Passwords not Matching! ')
+        return
+
+    elif len(username) < 4:
+
+        cant_select(' username too short!\n Minimum 4 characters ')
+        return
+
+    elif len(username) > 16:
+        cant_select(' username too long!\n Maximum 16 characters ')
+        return
+    elif len(password) < 8:
+        cant_select(' Password too short!\n Minimum 8 characters ')
+        return
+
+    elif len(password) > 16:
+        cant_select(' Password too long!\n Maximum 16 characters ')
+        return
+    
+    elif ('@' not in email) and (len(email) != 0): #email isn't cumpolsory
+        cant_select(' invalid email ')
+        return
+
+    elif os.path.isdir(os.path.join(os.getcwd(), str(username))):  #check for username duplication 
+        cant_select(' Account with the same name already created ')
+        return
+
+    else:
+        userdirectory = os.path.join(os.getcwd(), str(username))
+        os.mkdir(userdirectory) #create the new directory for the new account
+        file = open(os.path.join(userdirectory, 'password.txt'), "w")
+        file.write(password)
+        file.close()
+        accountpage.destroy()
+
+        
+
+def home_page():
+
+    try: 
+        account 
+        loggedin = True
+    except: 
+        loggedin = False
+
+    #button information
+    global OffButtonTextColour 
+    global OffButtonColour     
+    global OnButtonTextColour  
+    global OnButtonColour      
+
+    OffButtonTextColour = '#363232'      #dark grey
+    OffButtonColour     = '#e3dcdc'      #light grey
+    OnButtonTextColour  = '#000000'      #black
+    OnButtonColour      = '#ffffff'      #white
+
+    popup = tk.Tk()
+    popup.wm_title("homepage")  
+    popup.geometry('1536x800')
+    ttk.Label(popup, text=' Home ', font=("Verdana", 40)).pack(side="top", pady=10)
+       
+    Button(popup, text="          log in           ",  width=120, height=6, bg=OnButtonColour, command = lambda:[popup.destroy(),     login()  , home_page() ]).pack(pady="12") #login to be coded
+    Button(popup, text="    Make a new account     ",  width=120, height=6, bg=OnButtonColour, command = lambda:[popup.destroy(), new_account(), home_page() ]).pack(pady="12")
+
+    if loggedin:
+        Button(popup, text="      Create a new map         ",  width=120, height=6, bg=OnButtonColour, command = lambda:[popup.destroy(),      display_mapping_editor()  , home_page()]).pack(pady="5")
+        Button(popup, text="     Edit an saved map         ",  width=120, height=6, bg=OnButtonColour, command = lambda:[popup.destroy(),        Access_saved_maps()     , home_page()]).pack(pady="5") #Access_saved_maps to be coded
+    else:
+        errormessage = 'Not logged in'
+        Button(popup, text="      Create a new map         ",  width=120, height=6 , bg=OffButtonColour, command = lambda:[cant_select(errormessage)]).pack(pady="12") 
+        Button(popup, text="     Edit an saved map         ",  width=120, height=6 , bg=OffButtonColour, command = lambda:[cant_select(errormessage)]).pack(pady="12") 
+
+    popup.mainloop()
             
 #a = check_vertex([[80,40],[100,20]],[[50,30],[130,50]])
 #print(a)
 
-"""used for testing"""
-Lines = [ [[50,550], [100,600]], [[100,500], [100,600]], [[150,550], [100,600]], [[150,550], [200,500]], [[250,450], [200,500]], [[150,450], [200,500]], [[150,450], [200,400]], [[150,450], [50,400]], [[100,350], [50,400]], [[100,350], [50,300]], [[100,350], [150,300]], [[150,300],[100,250]], [[150,300],[200,250]], [[100,250],[150,200]], [[200,250],[150,200]]
+"""used for testing
+Lines = [ [[50,550], [100,600]], [[100,500], [100,600]], [[150,550], [100,600]], [[150,550], [200,500]], [[250,450], [200,500]], [[150,450], [200,500]], [[150,450], [200,400]], [[150,450], [50,400]], [[100,350], [50,400]], [[100,350], [50,300]], [[100,350], [150,300]], [[150,300],[100,250]], [[150,300],[200,250]], [[100,250],[150,200]]
         ,[ [486,204], [525,210], [650,200], [875,220], [995,215], [1117, 290]	], [	[624,99], [650,140], [750,150], [820,130], [870,150], [910, 260], [910, 265], [900,295], [850,320], [800,330], [760,345], [700, 335], [650,310], [600,280], [570,230], [580,80], [600, 50], [660,50], [750,15], [830,98], [850,150], [845,195] 	]	]
 #test_map = map_class(Lines)
 #print(test_map.graph)
 #test_map.make_graph()
 #print(test_map.graph)
 display_mapping_editor(Lines)
-""" """
+""" 
 
-
-colour = (192,192,192)
-
-display_mapping_editor()
+home_page()
