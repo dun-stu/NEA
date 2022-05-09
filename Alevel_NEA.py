@@ -1,4 +1,4 @@
-
+import hashlib
 import pygame, sys
 import math
 import random
@@ -939,14 +939,30 @@ def pressing(buttonposition, button, mouseposition):
    if (buttonposition[0]) < mouseposition[0] < (buttonposition[0] + (button.get_rect()).width) and (buttonposition[1]) < mouseposition[1] < (buttonposition[1] + (button.get_rect()).height): return True
    else: return False   
 
+def md5hashing(str2hash):
+
+    for x in range(0,5):
+        str2hash = hashlib.md5(str2hash.encode()).hexdigest()
+    return str2hash
+
 def Save(Lines):
-    userdirectory = os.path.join(os.getcwd(), str(username))
-    if os.path.isdir(os.path.join(userdirectory, 'Lines.txt')): #if there is a directory called lines
-        for l in range(1,math.inf):
-            if not os.path.isdir(os.path.join(userdirectory, 'Lines[' + str(l) + '].txt')): #get the next available index to save the file 
+    userdirectory = os.path.join(os.getcwd(), str(account))
+    if os.path.exists(os.path.join(userdirectory, 'Lines.txt')): #if there is a directory called lines
+        for l in range(1,100): #assume not gonna have > 100 saved files, if you do, then time to overwrite
+            if not os.path.exists(os.path.join(userdirectory, 'Lines[' + str(l) + '].txt')): #get the next available index to save the file 
                 filename = 'Lines[' + str(l) + '].txt'
                 break
     else: filename = 'Lines.txt'
+
+    Saved = tk.Tk()
+    Saved.wm_title("") 
+    ttk.Label(Saved, text=(str(filename) + ' has been saved'), font=("Verdana", 20)).pack(side="top", fill="x", pady=10)       
+    Button(Saved, text="OK",  width=12 , command = popup.destroy).pack(pady="5") 
+    popup.mainloop()
+
+    f = open(os.path.join(userdirectory, filename), "w")
+    f.write(str(Lines))
+    f.close()
 
 
 
@@ -1645,7 +1661,7 @@ def login():
     username  = StringVar()
     password  = StringVar() 
 
-    ttk.Label(loginpage, text=' Make a New Account ', font=("Verdana", 40)).pack(side="top", fill="x", pady=10)
+    ttk.Label(loginpage, text=' Log In ', font=("Verdana", 40)).pack(side="top", fill="x", pady=10)
     
     ttk.Label(loginpage, text=' Username ', font=("Verdana", 20)).pack(side="top", fill="x", pady=20, padx=310)
     ttk.Entry(loginpage, width=50, font=('Arial 24'), textvariable = username).pack()
@@ -1660,22 +1676,27 @@ def login():
 def check_login(username, password):
 
     userdirectory = os.path.join(os.getcwd(), str(username))
-    if os.path.isdir(userdirectory): #if there is a directory with the username given
-         
+
+    Valid = True
+    
+    for char in[ '/', '"', "'", ':', ';','{','}','=','>','<',' ']:  #unnecessary characters, which may be used in injection attacks
+        if ( (char in username)  or   (char in password)):  Valid = False
+
+    if os.path.isdir(userdirectory) and (len(username) != 0) and (Valid == True): #if there is a directory with the username given
+
         file = open(os.path.join(userdirectory, 'password.txt'), "r")
-        p = file.read() #Actual password
+        h = file.read() #hash
         file.close()
-        if password == p:
+        if md5hashing(password) == h:
             global account
             account = username
             popup = tk.Tk()
             popup.wm_title("") 
             ttk.Label(popup, text='Logged In successfully', font=("Verdana", 20)).pack(side="top", fill="x", pady=10)       
-            Button(popup, text="OK",  width=12 , command = lambda:[popup.destroy(), loginpage.destroy()]).pack(pady="5") 
+            Button(popup, text="OK",  width=12 , command = lambda:[popup.destroy(), loginpage.destroy()]).pack(pady="5")
+            return
 
-    else: cant_select('Invalid Credentials')
-
-             
+    cant_select('Invalid Credentials')
 
 def new_account():
     global accountpage
@@ -1755,11 +1776,40 @@ def Make_account(username, password, password2, email):
         userdirectory = os.path.join(os.getcwd(), str(username))
         os.mkdir(userdirectory) #create the new directory for the new account
         file = open(os.path.join(userdirectory, 'password.txt'), "w")
-        file.write(password)
+        file.write(md5hashing(password))
         file.close()
         accountpage.destroy()
 
+def  Access_saved_maps():
+    userdirectory = os.path.join(os.getcwd(), str(account))
+    GraphNames = []
+    GraphLines = []
+    Graphs     = []
+    if os.path.exists(os.path.join(userdirectory, 'Lines.txt')): #if there is a directory called lines
+        filename = 'Lines.txt'
+        GraphNames.append(filename)
+        f = open(os.path.join(userdirectory, filename), "r")
+        GraphLines.append(f.read())        #the intricacies of displaying to be coded
+        Graphs.append('')
+        Graphs[len(Graphs) - 1] = pygame.Surface((1536,800))
+        f.close()
         
+
+    for l in range(1,100): #assume not gonna have > 100 saved files
+        if os.path.exists(os.path.join(userdirectory, 'Lines[' + str(l) + '].txt')): #if the file of that name exists
+            filename = 'Lines[' + str(l) + '].txt'
+            GraphNames.append(filename)
+            f = open(os.path.join(userdirectory, filename), "r")
+            GraphsLines.append(f.read())        #the intricacies of displaying to be coded
+            f.close()
+          
+
+    screen  = pygame.display.set_mode((1536,800))
+    
+
+    
+
+
 
 def home_page():
 
