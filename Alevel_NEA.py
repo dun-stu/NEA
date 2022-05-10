@@ -1,3 +1,20 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import hashlib
 import pygame, sys
 import math
@@ -948,30 +965,39 @@ def md5hashing(str2hash):
 def Save(Lines):
     userdirectory = os.path.join(os.getcwd(), str(account))
     if os.path.exists(os.path.join(userdirectory, 'Lines.txt')): #if there is a directory called lines
+        f = open(os.path.join(userdirectory, 'Lines.txt'), "r")
+        if f.read() == Lines:   #check if those lines are already present
+            cant_select('graph already saved')
+            f.close()
+            return
+
         for l in range(1,100): #assume not gonna have > 100 saved files, if you do, then time to overwrite
             if not os.path.exists(os.path.join(userdirectory, 'Lines[' + str(l) + '].txt')): #get the next available index to save the file 
                 filename = 'Lines[' + str(l) + '].txt'
                 break
+            else:
+                f = open(os.path.join(userdirectory, 'Lines[' + str(l) + '].txt'), "r")
+                if f.read() == Lines:  
+                    cant_select('graph already saved')
+                    f.close()
+                    return
+
     else: filename = 'Lines.txt'
 
     Saved = tk.Tk()
     Saved.wm_title("") 
     ttk.Label(Saved, text=(str(filename) + ' has been saved'), font=("Verdana", 20)).pack(side="top", fill="x", pady=10)       
-    Button(Saved, text="OK",  width=12 , command = popup.destroy).pack(pady="5") 
-    popup.mainloop()
+    Button(Saved, text="OK",  width=12 , command = Saved.destroy).pack(pady="5") 
+    Saved.mainloop()
 
     f = open(os.path.join(userdirectory, filename), "w")
     f.write(str(Lines))
     f.close()
 
-
-
-
-
 def display_mapping_editor(Lines = [], colour = (192,192,192), 
                            editing = True, makinggraph = False, 
                            selectinggraph = False, selectingalgorithm = False, 
-                           displayingalorithm = False, selectingnodes = False): 
+                           displayingalorithm = False, selectingnodes = False, selectinglines = False): 
 
     #Editor is a function with different modes
     
@@ -986,7 +1012,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
         candraw  = False
         pabutton = False #perform algorithm button
 
-    if selectingalgorithm or selectinggraph or displayingalorithm or selectingnodes:
+    if selectingalgorithm or selectinggraph or displayingalorithm or selectingnodes or selectinglines:
         svbutton = False
         mgbutton = False #make graph button
         canpan   = False
@@ -1372,6 +1398,17 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
                     if event.key == pygame.K_LEFT:
                         t -= (time.time() - t) % 2
                         S -= 1
+                
+                if selectinglines:
+                    if event.key == pygame.K_RETURN: #select the current saved map
+                        return #to be coded
+
+
+                    if event.key == pygame.K_RIGHT: #move onto the next saved map
+                        return +1
+
+                    if event.key == pygame.K_LEFT: #move onto the previous saved map
+                        return -1
 
                 if selectingnodes:
                     """used for testing"""
@@ -1738,7 +1775,10 @@ def Make_account(username, password, password2, email):
         if ( (char in username)  or 
              (char in password)  or
              (char in password2) or 
-             (char in email)   ): Valid = False
+             (char in email)   ):
+           Valid = False
+           print(char)
+
     
     if not Valid:
         cant_select(' Faulty input ')
@@ -1783,15 +1823,13 @@ def Make_account(username, password, password2, email):
 def  Access_saved_maps():
     userdirectory = os.path.join(os.getcwd(), str(account))
     GraphNames = []
-    GraphLines = []
-    Graphs     = []
+    GraphsLines = []
+
     if os.path.exists(os.path.join(userdirectory, 'Lines.txt')): #if there is a directory called lines
         filename = 'Lines.txt'
         GraphNames.append(filename)
         f = open(os.path.join(userdirectory, filename), "r")
-        GraphLines.append(f.read())        #the intricacies of displaying to be coded
-        Graphs.append('')
-        Graphs[len(Graphs) - 1] = pygame.Surface((1536,800))
+        GraphsLines.append(f.read())        #the intricacies of displaying to be coded
         f.close()
         
 
@@ -1800,12 +1838,26 @@ def  Access_saved_maps():
             filename = 'Lines[' + str(l) + '].txt'
             GraphNames.append(filename)
             f = open(os.path.join(userdirectory, filename), "r")
+            L = []
+            print(L[0][0])
             GraphsLines.append(f.read())        #the intricacies of displaying to be coded
             f.close()
           
-
-    screen  = pygame.display.set_mode((1536,800))
+    #prompt to select map 
+    savepopup = tk.Tk()
+    savepopup.wm_title("") 
+    ttk.Button(savepopup, text="    Select map     ", command = lambda:[savepopup.destroy()]).pack() #allow subgraph to be selected 
+    ttk.Label(savepopup, text='Press enter to select it, and the left and right arrows to navigate', font=("Verdana", 20)).pack(side="top", fill="x", pady=10)       
+    savepopup.mainloop()
     
+    for e in range(0,len(GraphsLines)):
+        print(GraphsLines[e])
+        s = display_mapping_editor(GraphsLines[e], (192,192,192), False, False, False, False, False, False, True)
+        if   s == +1:   continue #loop automatically adds 1
+        elif s == -1:   e -= 2 #in order to go back, as next loop will add 1
+        else: display_mapping_editor(GraphsLines[e])
+
+       # if e == -2: e = e % len(GraphsLines)
 
     
 
