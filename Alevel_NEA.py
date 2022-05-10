@@ -7,9 +7,8 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import *
 import os
+import json
 pygame.init()
-
-
 
 def check_cycle(StartNode, NodeFrom, List, D):
     for EachConnection in D[StartNode[0]]:
@@ -36,7 +35,6 @@ def cant_select(msg, showing=False):
     ttk.Label(popup, text=msg, font=("Verdana", 20)).pack(side="top", fill="x", pady=10)       
     Button(popup, text="OK",  width=12 , command = popup.destroy).pack(pady="5") 
     
-
 def check_vertex(CoordinateSet1, CoordinateSet2, Version = 1): #to check if the lines between two sets of coordinates intersect
   
     x1_1 = CoordinateSet1[0][0]
@@ -934,7 +932,6 @@ class map_class:
                #if the line, or its reverse (since a line composed of the same coordinates is just the same line), hasn't been added yet
         return AlgorithmGraphLines 
         
-
 def pressing(buttonposition, button, mouseposition):
    if (buttonposition[0]) < mouseposition[0] < (buttonposition[0] + (button.get_rect()).width) and (buttonposition[1]) < mouseposition[1] < (buttonposition[1] + (button.get_rect()).height): return True
    else: return False   
@@ -947,25 +944,25 @@ def md5hashing(str2hash):
 
 def Save(Lines):
     userdirectory = os.path.join(os.getcwd(), str(account))
-    if os.path.exists(os.path.join(userdirectory, 'Lines.txt')): #if there is a directory called lines
-        f = open(os.path.join(userdirectory, 'Lines.txt'), "r")
-        if f.read() == Lines:   #check if those lines are already present
+    if os.path.exists(os.path.join(userdirectory, 'Lines.json')): #if there is a directory called lines
+        f = open(os.path.join(userdirectory, 'Lines.json'), "r")
+        if json.load(f) == Lines:   #check if those lines are already present
             cant_select('graph already saved')
             f.close()
             return
 
         for l in range(1,100): #assume not gonna have > 100 saved files, if you do, then time to overwrite
-            if not os.path.exists(os.path.join(userdirectory, 'Lines[' + str(l) + '].txt')): #get the next available index to save the file 
-                filename = 'Lines[' + str(l) + '].txt'
+            if not os.path.exists(os.path.join(userdirectory, 'Lines[' + str(l) + '].json')): #get the next available index to save the file 
+                filename = 'Lines[' + str(l) + '].json'
                 break
             else:
-                f = open(os.path.join(userdirectory, 'Lines[' + str(l) + '].txt'), "r")
-                if f.read() == Lines:  
+                f = open(os.path.join(userdirectory, 'Lines[' + str(l) + '].json'), "r")
+                if json.load(f) == Lines:  
                     cant_select('graph already saved')
                     f.close()
                     return
 
-    else: filename = 'Lines.txt'
+    else: filename = 'Lines.json'
 
     Saved = tk.Tk()
     Saved.wm_title("") 
@@ -988,6 +985,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
 
     #Varying functionality allowed depending on the mode
     if makinggraph:
+        lgbutton = False #logoff button
         svbutton = False #save button
         mgbutton = False #make graph button
         canpan   = True
@@ -996,6 +994,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
         pabutton = False #perform algorithm button
 
     if selectingalgorithm or selectinggraph or displayingalorithm or selectingnodes or selectinglines:
+        lgbutton = False
         svbutton = False
         mgbutton = False #make graph button
         canpan   = False
@@ -1004,13 +1003,13 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
         pabutton = False #perform algorithm button
     
     if selectingnodes:
-        svbutton = False
         linenumber       = 0
         coordinatenumber = 0
         next  = False #defaults
         prior = False
 
     if editing:
+        lgbutton = True
         svbutton = True
         mgbutton = True
         canpan   = True
@@ -1056,6 +1055,9 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
     SaveButtonTextColour = OffButtonTextColour
     SaveButtonColour     = OffButtonColour
         
+    LogoffButtonPosition   = (300,30)
+    LogoffButtonTextColour = OffButtonTextColour
+    LogoffButtonColour     = OffButtonColour
 
     zoomtext    = (pygame.font.SysFont('arial', 16)).render('      Zoom        ', True, (0,0,0)) 
 
@@ -1189,11 +1191,6 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
             Node = globals()['SubGraphLines'][linenumber][coordinatenumber]
             pygame.draw.circle(map, (66, 245, 66), Node, 4) #draw the Node
 
-
-
-                
-
-
         if selectinggraph:
             """
             try:
@@ -1262,8 +1259,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
                 pygame.draw.circle(map, (65, 250, 65), EachNode, 4) #to be changed
         except:pass
         used for testing"""
-
-         
+        
         """ used for testing
         if isinstance(E, tuple): pygame.draw.circle(map, (245, 185, 66), E, 4) #to be changed
         """ 
@@ -1273,6 +1269,13 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
         else:
             GraphButtonTextColour =  OffButtonTextColour #if there are no lines, a graph can't be made
             GraphButtonColour     =  OffButtonColour
+
+        if lgbutton:   
+            LogoffButtonTextColour =  OnButtonTextColour
+            LogoffButtonColour     =  OnButtonColour
+        else:
+            LogoffButtonTextColour =  OffButtonTextColour #if there are no lines, a graph can't be made
+            LogoffButtonColour     =  OffButtonColour
 
         if linesexist and svbutton:   
             SaveButtonTextColour =  OnButtonTextColour
@@ -1314,6 +1317,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
         undobutton  = (pygame.font.SysFont('arial', 25)).render(' Undo ', True, UndoButtonTextColour, UndoButtonColour)
         redobutton  = (pygame.font.SysFont('arial', 25)).render(' Redo ', True, RedoButtonTextColour, RedoButtonColour)
         savebutton  = (pygame.font.SysFont('arial', 40)).render(' Save ', True, SaveButtonTextColour, SaveButtonColour)
+        logoffbutton   = (pygame.font.SysFont('arial', 40)).render(' Logoff  ', True, LogoffButtonTextColour, LogoffButtonColour)
         zoomupbutton   = (pygame.font.SysFont('arial', 13)).render('    +    ', True, ZoomUpTextColour, ZoomUpButtonColour)
         zoomdownbutton = (pygame.font.SysFont('arial', 13)).render('    -    ', True, ZoomDownTextColour, ZoomDownButtonColour)
         zoompercentage = (pygame.font.SysFont('arial', 13)).render(str(str(int(zoom * 100)) + '%'), True, (0,0,0))
@@ -1330,6 +1334,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
         screen.blit(undobutton  , UndoButtonPosition)
         screen.blit(redobutton  , RedoButtonPosition)
         screen.blit(savebutton  , SaveButtonPosition)
+        screen.blit(logoffbutton  , LogoffButtonPosition)
         screen.blit(zoomtext, ZoomTextPosition)
         screen.blit(zoompercentage , ZoomPercentagePosition)
         screen.blit(zoomupbutton   , ZoomUpButtonPosition)
@@ -1340,8 +1345,14 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT: #allows the closing of the window
+                a = account
+                for each in globals():
+                    if each != account:
+                        del globals()[each]
+                    
                 displaying = False
                 pygame.display.quit()
+                home_page()
             """
             if selectinggraph:
                 
@@ -1427,8 +1438,9 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
                     zoom = 1
                     MapToScreenOffset = [0,100]
 
-
-
+                if editing and event.key == pygame.K_DELETE:
+                    Lines = []
+                    linesexist = False
 
             if event.type == pygame.MOUSEBUTTONDOWN: #if click   ①
                 
@@ -1465,6 +1477,16 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
                     if pressing(SaveButtonPosition, savebutton, pygame.mouse.get_pos()) and (SaveButtonColour ==  OnButtonColour):
                         
                         Save(Lines)
+
+                    if pressing(LogoffButtonPosition, logoffbutton, pygame.mouse.get_pos()) and (LogoffButtonColour ==  OnButtonColour):
+                        
+                        for each in globals():
+                            del globals()[each]
+                    
+                        displaying = False
+                        pygame.display.quit()
+                        logoff()
+                        home_page()
 
                     if pressing(GraphButtonPosition, graphbutton, pygame.mouse.get_pos()) and (GraphButtonColour ==  OnButtonColour):
                         mapobject = map_class(Lines)
@@ -1808,22 +1830,21 @@ def  Access_saved_maps():
     GraphNames = []
     GraphsLines = []
 
-    if os.path.exists(os.path.join(userdirectory, 'Lines.txt')): #if there is a directory called lines
-        filename = 'Lines.txt'
+    if os.path.exists(os.path.join(userdirectory, 'Lines.json')): #if there is a directory called lines
+        filename = 'Lines.json'
         GraphNames.append(filename)
         f = open(os.path.join(userdirectory, filename), "r")
-        GraphsLines.append(f.read())        #the intricacies of displaying to be coded
+        GraphsLines.append(json.load(f))        #the intricacies of displaying to be coded
         f.close()
         
 
     for l in range(1,100): #assume not gonna have > 100 saved files
-        if os.path.exists(os.path.join(userdirectory, 'Lines[' + str(l) + '].txt')): #if the file of that name exists
-            filename = 'Lines[' + str(l) + '].txt'
+        if os.path.exists(os.path.join(userdirectory, 'Lines[' + str(l) + '].json')): #if the file of that name exists
+            filename = 'Lines[' + str(l) + '].json'
             GraphNames.append(filename)
             f = open(os.path.join(userdirectory, filename), "r")
             L = []
-            print(L[0][0])
-            GraphsLines.append(f.read())        #the intricacies of displaying to be coded
+            GraphsLines.append(json.load(f))        #the intricacies of displaying to be coded
             f.close()
           
     #prompt to select map 
@@ -1832,15 +1853,16 @@ def  Access_saved_maps():
     ttk.Button(savepopup, text="    Select map     ", command = lambda:[savepopup.destroy()]).pack() #allow subgraph to be selected 
     ttk.Label(savepopup, text='Press enter to select it, and the left and right arrows to navigate', font=("Verdana", 20)).pack(side="top", fill="x", pady=10)       
     savepopup.mainloop()
-    
-    for e in range(0,len(GraphsLines)):
-        print(GraphsLines[e])
+    e = 0
+    while True:
         s = display_mapping_editor(GraphsLines[e], (192,192,192), False, False, False, False, False, False, True)
-        if   s == +1:   continue #loop automatically adds 1
-        elif s == -1:   e -= 2 #in order to go back, as next loop will add 1
-        else: display_mapping_editor(GraphsLines[e])
+        if   s == +1:   e += 1 #in order to go forward
+        elif s == -1:   e -= 1 #in order to go back, as next loop will add 1
+        else: 
+            display_mapping_editor(GraphsLines[e])
+            break
 
-       # if e == -2: e = e % len(GraphsLines)
+        e = e % len(GraphsLines)
 
     
 
@@ -1874,7 +1896,7 @@ def home_page():
     Button(popup, text="    Make a new account     ",  width=120, height=6, bg=OnButtonColour, command = lambda:[popup.destroy(), new_account(), home_page() ]).pack(pady="12")
 
     if loggedin:
-        Button(popup, text="      Create a new map         ",  width=120, height=6, bg=OnButtonColour, command = lambda:[popup.destroy(),      display_mapping_editor()  , home_page()]).pack(pady="5")
+        Button(popup, text="      Create a new map         ",  width=120, height=6, bg=OnButtonColour, command = lambda:[popup.destroy(),      display_mapping_editor(), login(), home_page()]).pack(pady="5")
         Button(popup, text="     Edit an saved map         ",  width=120, height=6, bg=OnButtonColour, command = lambda:[popup.destroy(),        Access_saved_maps()     , home_page()]).pack(pady="5") #Access_saved_maps to be coded
     else:
         errormessage = 'Not logged in'
@@ -1887,8 +1909,7 @@ def home_page():
 #print(a)
 
 """used for testing
-Lines = [ [[50,550], [100,600]], [[100,500], [100,600]], [[150,550], [100,600]], [[150,550], [200,500]], [[250,450], [200,500]], [[150,450], [200,500]], [[150,450], [200,400]], [[150,450], [50,400]], [[100,350], [50,400]], [[100,350], [50,300]], [[100,350], [150,300]], [[150,300],[100,250]], [[150,300],[200,250]], [[100,250],[150,200]]
-        ,[ [486,204], [525,210], [650,200], [875,220], [995,215], [1117, 290]	], [	[624,99], [650,140], [750,150], [820,130], [870,150], [910, 260], [910, 265], [900,295], [850,320], [800,330], [760,345], [700, 335], [650,310], [600,280], [570,230], [580,80], [600, 50], [660,50], [750,15], [830,98], [850,150], [845,195] 	]	]
+Lines = S
 #test_map = map_class(Lines)
 #print(test_map.graph)
 #test_map.make_graph()

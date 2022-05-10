@@ -1,13 +1,38 @@
-import pygame, sys
-import time
-import schedule
-p = 0
-if not(p):
-    print(True)
+import os
 
 
 
+import json
+
+score=[ [[50,550], [100,600]], [[100,500], [100,600]], [[150,550], [100,600]], [[150,550], [200,500]], [[250,450], [200,500]], [[150,450], [200,500]], [[150,450], [200,400]], [[150,450], [50,400]], [[100,350], [50,400]], [[100,350], [50,300]], [[100,350], [150,300]], [[150,300],[100,250]], [[150,300],[200,250]], [[100,250],[150,200]]
+        ,[ [486,204], [525,210], [650,200], [875,220], [995,215], [1117, 290]	], [	[624,99], [650,140], [750,150], [820,130], [870,150], [910, 260], [910, 265], [900,295], [850,320], [800,330], [760,345], [700, 335], [650,310], [600,280], [570,230], [580,80], [600, 50], [660,50], [750,15], [830,98], [850,150], [845,195] 	]	]
+
+
+with open("file.json", 'w') as f:
+    # indent=2 is not needed but makes the file human-readable 
+    # if the data is nested
+    json.dump(score, f, indent=2) 
+
+with open("file.json", 'r') as f:
+    score = json.load(f)
+
+
+for each in score:
+    print(each)
+
+
+
+ 
 """
+with open(os.path.join('C://Users/User/source/repos/NEA/Final Nea/Amal','Lines[1].txt'),'r') as f:
+
+   L = f.read()
+   print(L)
+   print("L.split('[', 0)")
+   print(L.split('[', 0))
+   print("L[0].split('[', 0)")
+   print(L[0].split('[', 0))
+
 T = ['1','2']
 for x in range(0,len(T)-1):
     print(x)
