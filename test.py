@@ -1,6 +1,17 @@
 import os
+import tkinter as tk
 
-
+a = tk.Tk()
+g = []
+test = 'garbage'
+g.append(test)
+g.append(a)
+print(g)
+a.destroy()
+del test
+print(g)
+while True: pass
+"""
 
 import json
 
@@ -23,7 +34,7 @@ for each in score:
 
 
  
-"""
+
 with open(os.path.join('C://Users/User/source/repos/NEA/Final Nea/Amal','Lines[1].txt'),'r') as f:
 
    L = f.read()

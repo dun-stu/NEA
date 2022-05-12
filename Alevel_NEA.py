@@ -10,6 +10,7 @@ import os
 import json
 pygame.init()
 
+
 def check_cycle(StartNode, NodeFrom, List, D):
     for EachConnection in D[StartNode[0]]:
         if EachConnection != NodeFrom:
@@ -354,6 +355,8 @@ class map_class:
 
     def Djikstra(self, subgraph):
 
+        
+
         if len(subgraph.keys()) == 1: #if the subgraph is just a single point looped
              return subgraph           #then the shortest path from a point to itself is just the only path in the graph
 
@@ -389,6 +392,7 @@ class map_class:
             Node2 = tuple(self.select_node(subgraph))
 
 
+        t = time.time()
         #code to add the selected points as nodes to the subgraph
         SubGraphLines = self.get_algorithm_lines(subgraph, subgraph) #get the graph as lines 
         subgraph = map_class(SubGraphLines)     #so the mapclass can be used
@@ -500,9 +504,12 @@ class map_class:
 
             NextNode = EachConnection[0]
 
-        print(algorithmgraph)
-        print(subgraph)
+        #print(algorithmgraph)
+        #print(subgraph)
         self.algorithmgraph = algorithmgraph
+        """used for testing"""
+        print('time elapsed = ' + str(time.time() - t))
+        """ """
 
     def breadth_first(self, subgraph):
 
@@ -527,7 +534,7 @@ class map_class:
         popup.mainloop()
 
         Node1 = tuple(self.select_node(subgraph))
-
+        t = time.time()
         #code to add the selected points as nodes to the subgraph
         SubGraphLines1 = self.get_algorithm_lines(subgraph, subgraph) #get the graph as lines 
         subgraph = map_class(SubGraphLines1)     #so the mapclass can be used
@@ -588,16 +595,25 @@ class map_class:
                     print('Stack:   ',end="")
                     print(Stack)
                     """ 
+
+                    """Feature disabled for testing purposes (From kruscals function)"""
                     global SubGraphLines
-                    SubGraphLines = self.get_algorithm_lines(subgraph, algorithmgraph)
+                    SubGraphLines = self.get_algorithm_lines(subgraph, algorithmgraph) 
                     display_mapping_editor(self.Lines, self.colour, False, False, False, False, True)
+                    #displays the updated situation of the spanning tree
+                    """ """
                     
                     
             else: queue.pop(0) # if none of the connections are Unvisited
 
         self.algorithmgraph = algorithmgraph
+        """used for testing
+        print('time elapsed = ' + str(time.time() - t))
+        """ 
 
     def kruscals(self, subgraph):
+
+        t = time.time()
         Edges = []
         for EachKey in subgraph.keys():
             for EachValue in subgraph[EachKey]:
@@ -642,13 +658,17 @@ class map_class:
                 if len(MST[Edges[edgenumber].node2]) == 0: del MST[Edges[edgenumber].node2]
             else: 
                 edges += 1
-                """used for testing"""
+                """Feature disabled for testing purposes (From kruscals function)"""
                 global SubGraphLines
-                SubGraphLines = self.get_algorithm_lines(subgraph, MST)
+                SubGraphLines = self.get_algorithm_lines(subgraph, MST)             
                 display_mapping_editor(self.Lines, self.colour, False, False, False, False, True)
+                #displays the updated situation of the spanning tree
                 """ """
             edgenumber += 1
         self.algorithmgraph = MST
+        """used for testing"""
+        print('time elapsed = ' + str(time.time() - t))
+        """ """
 
     def depth_first(self, subgraph):
 
@@ -718,7 +738,7 @@ class map_class:
 
                     try:    algorithmgraph[EachConnection[0]].append([VisitingNode, EachConnection[1]]) 
                     except: algorithmgraph.update({EachConnection[0]: [[VisitingNode, EachConnection[1]]]})
-                    """used for testing"""
+                    """used for testing
                     print('VisitingNode:    ',end="")
                     print(VisitingNode)
                     print('EachConnection[0]:   ',end="")
@@ -727,13 +747,13 @@ class map_class:
                     #print(Unvisited)
                     print('Stack:   ',end="")
                     print(Stack)
-                    """ """
+                    """ 
                     #Unvisited.remove(VisitingNode)
                     Stack.append(EachConnection[0])
-                    """used for testing"""
+                    """used for testing
                     print('Stack:   ',end="")
                     print(Stack)
-                    """ """
+                    """ 
                     global SubGraphLines
                     SubGraphLines = self.get_algorithm_lines(subgraph, algorithmgraph)
                     display_mapping_editor(self.Lines, self.colour, False, False, False, False, True)
@@ -1051,7 +1071,7 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
     PerformAlgorithmButtonColour   = OffButtonColour
     PerformAlgorithmButtonPosition = (710,55)
 
-    SaveButtonPosition   = (300,30)
+    SaveButtonPosition   = (500,30)
     SaveButtonTextColour = OffButtonTextColour
     SaveButtonColour     = OffButtonColour
         
@@ -1107,9 +1127,6 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
     """
     E = None #E used for testing
 
-    """used for testing"""
-    #Lines = [[[400, 300], [1200, 300]]]
-    """ """
     while displaying:
 
         """used for testing
@@ -1345,13 +1362,16 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT: #allows the closing of the window
+                pygame.display.quit()
                 a = account
-                for each in globals():
-                    if each != account:
+                
+                for each in dir():
+                    if (each != a) and (each[0:2] != "__") and (each in globals()):
+                        print(globals()[each])
                         del globals()[each]
                     
                 displaying = False
-                pygame.display.quit()
+                
                 home_page()
             """
             if selectinggraph:
@@ -1395,20 +1415,29 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
                 
                 if selectinglines:
                     if event.key == pygame.K_RETURN: #select the current saved map
+                        """used for testing"""
+                        print('Enter clicked')
+                        """ """
                         return #to be coded
 
 
                     if event.key == pygame.K_RIGHT: #move onto the next saved map
+                        """used for testing"""
+                        print('Right arrow clicked')
+                        """ """
                         return +1
 
                     if event.key == pygame.K_LEFT: #move onto the previous saved map
+                        """used for testing"""
+                        print('Left arrow clicked')
+                        """ """
                         return -1
 
                 if selectingnodes:
-                    """used for testing"""
+                    """used for testing
                     if ctrl:
                         print('ctrl')
-                    """ """
+                    """ 
 
                     if event.key == pygame.K_RETURN:
                                                  
@@ -1419,15 +1448,15 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
 
 
                     if event.key == pygame.K_RIGHT:
-                        """used for testing"""
+                        """used for testing
                         print('Right arrow clicked')
-                        """ """
+                        """ 
                         next = True
 
                     if event.key == pygame.K_LEFT:
-                        """used for testing"""
+                        """used for testing
                         print('Left arrow clicked')
-                        """ """
+                        """ 
                         prior = True
 
                 if displayingalorithm:
@@ -1438,9 +1467,14 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
                     zoom = 1
                     MapToScreenOffset = [0,100]
 
-                if editing and event.key == pygame.K_DELETE:
+                if editing and (event.key == pygame.K_DELETE):
                     Lines = []
                     linesexist = False
+                    try: NewLine = [] #if it exists
+                    except: pass
+
+                    try: del mapobject #if it exists
+                    except: pass
 
             if event.type == pygame.MOUSEBUTTONDOWN: #if click   ①
                 
@@ -1479,14 +1513,15 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
                         Save(Lines)
 
                     if pressing(LogoffButtonPosition, logoffbutton, pygame.mouse.get_pos()) and (LogoffButtonColour ==  OnButtonColour):
-                        
-                        for each in globals():
-                            del globals()[each]
-                    
+                        pygame.display.quit()
+
+
+                        del globals()['account']
                         displaying = False
                         pygame.display.quit()
-                        logoff()
+                        login()
                         home_page()
+                        return
 
                     if pressing(GraphButtonPosition, graphbutton, pygame.mouse.get_pos()) and (GraphButtonColour ==  OnButtonColour):
                         mapobject = map_class(Lines)
@@ -1587,15 +1622,15 @@ def display_mapping_editor(Lines = [], colour = (192,192,192),
 
                 if selectingnodes:
                     if event.key == pygame.K_RIGHT:
-                        """used for testing"""
+                        """used for testing
                         print('Right arrow released')
-                        """ """
+                        """ 
                         next = False                        
 
                     if event.key == pygame.K_LEFT:
-                        """used for testing"""
+                        """used for testing
                         print('Left arrow released')
-                        """ """
+                        """ 
                         prior = False
 
             if event.type == pygame.MOUSEBUTTONUP: #if click released
@@ -1709,9 +1744,9 @@ def login():
     ttk.Entry(loginpage, width=50, font=('Arial 24'), textvariable = username).pack()
 
     ttk.Label(loginpage, text=' Password ', font=("Verdana", 20)).pack(side="top", fill="x", pady=20, padx=310)
-    ttk.Entry(loginpage, width=50, font=('Arial 24'), textvariable = password,  show="*").pack() 
+    ttk.Entry(loginpage, width=50, font=('Arial 24'), textvariable = password, show="*" ).pack()  #, show="*" removed for testing
 
-    Button(loginpage, text=" Register ",  width=55, height=3,  command = lambda:[check_login(username.get(), password.get())]).pack(pady=30) #login to be coded
+    Button(loginpage, text=" login ",  width=55, height=3,  command = lambda:[check_login(username.get(), password.get())]).pack(pady=30) #login to be coded
 
     loginpage.mainloop()
    
@@ -1738,7 +1773,8 @@ def check_login(username, password):
             Button(popup, text="OK",  width=12 , command = lambda:[popup.destroy(), loginpage.destroy()]).pack(pady="5")
             return
 
-    cant_select('Invalid Credentials')
+    if Valid == False: cant_select('Faulty input')
+    else: cant_select('Invalid Credentials')
 
 def new_account():
     global accountpage
@@ -1757,10 +1793,10 @@ def new_account():
     ttk.Entry(accountpage, width=50, font=('Arial 24'), textvariable = username).pack()
 
     ttk.Label(accountpage, text=' Password ', font=("Verdana", 20)).pack(side="top", fill="x", pady=20, padx=310)
-    ttk.Entry(accountpage, width=50, font=('Arial 24'), textvariable = password,  show="*").pack() 
+    ttk.Entry(accountpage, width=50, font=('Arial 24'), textvariable = password, show="*").pack()  #, show="*" removed for testing
 
     ttk.Label(accountpage, text=' Re enter Password ', font=("Verdana", 20)).pack(side="top", fill="x", pady=20, padx=310)
-    ttk.Entry(accountpage, width=50, font=('Arial 24'), textvariable = password2, show="*").pack() 
+    ttk.Entry(accountpage, width=50, font=('Arial 24'), textvariable = password2, show="*").pack()  # removed for testing
 
     ttk.Label(accountpage, text=' Email ', font=("Verdana", 20)).pack(side="top", fill="x", pady=20, padx=310)
     ttk.Entry(accountpage, width=50, font=('Arial 24'), textvariable = email).pack()
@@ -1776,7 +1812,7 @@ def Make_account(username, password, password2, email):
     """ 
     Valid = True
     
-    for char in[ '/', '"', "'", ':', ';','{','}','=','>','<',' ']:  #unnecessary characters, which may be used in injection attacks
+    for char in[ '/', '"', "'", ':', ';','{','}','=','>','<',' ',',']:  #unnecessary characters, which may be used in injection attacks
         if ( (char in username)  or 
              (char in password)  or
              (char in password2) or 
@@ -1823,6 +1859,9 @@ def Make_account(username, password, password2, email):
         file = open(os.path.join(userdirectory, 'password.txt'), "w")
         file.write(md5hashing(password))
         file.close()
+        """used for testing"""
+        print('account created')
+        """ """
         accountpage.destroy()
 
 def  Access_saved_maps():
@@ -1849,12 +1888,13 @@ def  Access_saved_maps():
           
     #prompt to select map 
     savepopup = tk.Tk()
-    savepopup.wm_title("") 
+    savepopup.wm_title("")
+    savepopup.geometry('1536x800')
     ttk.Button(savepopup, text="    Select map     ", command = lambda:[savepopup.destroy()]).pack() #allow subgraph to be selected 
     ttk.Label(savepopup, text='Press enter to select it, and the left and right arrows to navigate', font=("Verdana", 20)).pack(side="top", fill="x", pady=10)       
     savepopup.mainloop()
     e = 0
-    while True:
+    while True and len(GraphsLines) > 0:
         s = display_mapping_editor(GraphsLines[e], (192,192,192), False, False, False, False, False, False, True)
         if   s == +1:   e += 1 #in order to go forward
         elif s == -1:   e -= 1 #in order to go back, as next loop will add 1
@@ -1917,4 +1957,11 @@ Lines = S
 display_mapping_editor(Lines)
 """ 
 
-home_page()
+while True:
+    global GlobalVariables
+
+    home_page()
+
+"""used for testing"""
+print('pressed ')
+""" """
